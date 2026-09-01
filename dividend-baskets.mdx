@@ -13,12 +13,12 @@ against, or not at all.
 
 1. **The creator picks the basket at launch** - up to ten assets with
    weights, from a menu of several hundred.
-2. **A share of every trade accrues to the basket.**
-3. **The contracts convert on-chain** - through real pools, priced
-   against a verified floor, with no keeper, no bot, and no protocol fee
-   on conversions.
-4. **Holders are paid automatically, pro-rata.** There is nothing to
-   claim - delivery pushes as people trade.
+2. **A share of every trade flows into the basket.**
+3. **The contracts buy the assets on-chain** - through real markets,
+   with a price floor so holders can never be quietly shortchanged. No
+   bot, no middleman, no fee on conversions.
+4. **Everyone gets their share automatically.** There is nothing to
+   claim - payouts arrive as people trade.
 
 ## The arithmetic - volume, not fee-share
 
@@ -71,8 +71,8 @@ can check whether a token's payout mix is a policy or a constant.
 
 Two things worth knowing before rebuilding a basket:
 
-- **Nothing in flight is lost.** Value sitting in a replaced slot keeps
-  draining to holders on the same pro-rata maths. A rebuild changes where
+- **Nothing in flight is lost.** Value sitting in a replaced slot still
+  reaches holders on the same sharing maths. A rebuild changes where
   future dividends go, never where past ones went.
 - **A careless pick degrades gracefully.** A slot whose asset cannot be
   priced simply pays the pair currency instead - nothing gets trapped.
@@ -83,20 +83,21 @@ readable state - is on the
 
 ## The honest edges
 
-- The basket is the creator's **preference, not a guarantee of which asset arrives**. A slot whose asset cannot be priced or routed at fill time pays out in the pair currency instead - visibly, never silently lost.
-- Conversions are floor-guarded: a fill that would arrive below the verified fair value is refused and retried smaller, rather than accepted badly.
-- An empty basket is simply the classic behaviour - dividends in the pair.
-- On a token whose controller seat is live, the payout mix can change -
-  re-weighted by the controller, visibly, on-chain. If that matters to
-  you, read the distributor's `basketRenounced` flag before relying on
-  the mix.
+- The basket is the creator's **preference, not a guarantee of which
+  asset arrives**. If an asset can't be bought at a fair price right now,
+  that share is paid in the pair currency instead - visibly, never lost.
+- A conversion that would land below fair value is refused and retried
+  smaller, rather than accepted badly.
+- An empty basket just means classic behaviour - dividends in the pair.
+- If the controller seat is still live, the payout mix can change. Anyone
+  can check on-chain whether the seat has been renounced.
 
 ## Where to see it
 
 Any token whose card carries the **BASKET REWARDS** tag pays a basket. Its token page shows the designated assets and weights, each holder's running totals per asset, and a breakdown of what has been received and what is waiting.
 
 <Note>
-The platform's own token participates too: launches can route a share of their rewards into the \$BSTONK basket vault, which holds a portfolio paid out to \$BSTONK holders in kind.
+The platform's own token participates too: launches can route a share of their rewards into the \$BSTONK basket vault - a portfolio paid out to \$BSTONK holders as the assets themselves.
 </Note>
 
 ## Further reading

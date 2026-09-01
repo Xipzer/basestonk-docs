@@ -55,22 +55,20 @@ One vault per launch, created by the launcher. The contract enforces:
 ## Dividends while locked
 
 Locked tokens are still held tokens, so a vault on a dividend-paying
-launch **accrues holder rewards** like any other holder. The beneficiary
-can pull the vault's accrual from the distributor and claim it out,
-per asset - the locked principal itself never moves early.
+launch **earns holder rewards** like any other holder. The beneficiary
+can claim what the vault has earned, per asset - the locked tokens
+themselves never move early.
 
 Two ways that stream ends, both one-way:
 
-- **`renounceAccrual`** - the beneficiary gives the locked supply's
-  dividend claim to the other holders, forever. It cannot be restored,
-  not even by the platform: the distributor refuses to un-renounce a
-  renounced claim.
+- **Renouncing it** - the beneficiary gives the locked supply's dividend
+  claim to the other holders, forever. It cannot be restored, not even by
+  the platform.
 - **Takeover.** If the community
-  [takes over the token](/cto), the takeover transaction calls the
-  vault's `renounceOnTakeover` - a departed founder's locked supply
-  stops earning the moment the seat moves. The tokens themselves remain
-  the beneficiary's and keep vesting on their schedule; only the
-  dividend stream ends.
+  [takes over the token](/cto), a departed founder's locked supply stops
+  earning the moment the seat moves. The tokens themselves remain the
+  beneficiary's and keep vesting on their schedule; only the dividend
+  stream ends.
 
 ## Reading a vault
 
