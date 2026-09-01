@@ -13,8 +13,8 @@
   },
   "favicon": "/favicon.png",
   "logo": {
-    "light": "/logo/wordmark.png",
-    "dark": "/logo/wordmark.png"
+    "light": "/logo/logo-light.png",
+    "dark": "/logo/logo-dark.png"
   },
   "navigation": {
     "groups": [
