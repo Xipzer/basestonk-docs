@@ -1,0 +1,81 @@
+---
+title: "Dev-buy vesting"
+sidebarTitle: "Vesting"
+description: "Lock the dev buy in a vault whose schedule is published on-chain in the launch transaction itself."
+icon: "hourglass-half"
+---
+
+A launch can route the creator's dev buy into a **vesting vault** instead
+of their wallet: a per-launch contract that releases the tokens linearly,
+with an optional cliff before anything unlocks at all. Pick 7, 30, 90 or
+365 days from the presets, or type any duration - **7 days is the floor
+and there is no ceiling.**
+
+<Note>
+**Vesting is on the Simple form too.** Both modes carry the same vest
+fields and the chain honours them identically.
+</Note>
+
+The point is not the lock - it is the **disclosure**. The schedule is
+announced on-chain in the launch transaction itself, so it is public from
+the block the token exists: a buyer reading the token page sees exactly
+what the creator locked and until when, before deciding anything.
+
+## The honest trade
+
+<Warning>
+  A vested dev buy is **uncapped by design**. The 10% dev-buy cap applies
+  only to the unvested path - tokens paid straight to the creator's
+  wallet. Choose a lock and the whole buy, whatever its size, routes into
+  the vault. The cap protected buyers from an undisclosed large position;
+  the vault replaces that protection with a disclosed one: the size and
+  the schedule are on-chain in the launch transaction, and the schedule
+  can never be shortened.
+</Warning>
+
+A vested launch is not automatically safer than a capped one - it is
+differently safe. The creator may hold more than 10%, but every token of
+it is time-locked on a schedule the chain announced at birth, and the
+launcher refuses a vesting request without a dev buy to vest
+(`VestRequiresDevBuy`).
+
+## How the vault behaves
+
+One vault per launch, created by the launcher. The contract enforces:
+
+- **Linear release.** Nothing before the cliff; after it, tokens vest
+  continuously, and anyone can trigger the release of what has vested.
+- **Extend, never shorten.** The beneficiary can lengthen a schedule;
+  any change that would shorten one reverts.
+- **Add, never subtract.** The beneficiary can lock more tokens under
+  new schedules. Each addition is its own on-chain event.
+- **The seat can move.** The vault can be transferred to another
+  address - a project outliving its founding wallet.
+
+## Dividends while locked
+
+Locked tokens are still held tokens, so a vault on a dividend-paying
+launch **accrues holder rewards** like any other holder. The beneficiary
+can pull the vault's accrual from the distributor and claim it out,
+per asset - the locked principal itself never moves early.
+
+Two ways that stream ends, both one-way:
+
+- **`renounceAccrual`** - the beneficiary gives the locked supply's
+  dividend claim to the other holders, forever. It cannot be restored,
+  not even by the platform: the distributor refuses to un-renounce a
+  renounced claim.
+- **Takeover.** If the community
+  [takes over the token](/cto), the takeover transaction calls the
+  vault's `renounceOnTakeover` - a departed founder's locked supply
+  stops earning the moment the seat moves. The tokens themselves remain
+  the beneficiary's and keep vesting on their schedule; only the
+  dividend stream ends.
+
+## Reading a vault
+
+Everything above is public state on the vault contract: every schedule's
+total, released amount, start, cliff and duration; what a release would
+send right now; whether the dividend stream is gone. The factory's
+`vaultOf(token)` answers whether a token has a vault at all -
+`address(0)` means the dev buy was not vested.

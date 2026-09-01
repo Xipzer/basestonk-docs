@@ -1,0 +1,179 @@
+---
+title: "Dividend baskets"
+icon: "basket-shopping"
+description: "Pick up to ten assets at launch, and your holders are paid in them - tokenized stocks, majors, ecosystem tokens - converted on-chain, automatically."
+---
+
+A BaseStonk launch can pay its holders in **up to ten assets of the
+creator's choosing** - NVIDIA, gold ETFs, cbBTC, \$BSTONK, agent tokens,
+any mix at once. Most launchpads pay rewards in whatever the token trades
+against, or not at all.
+
+## How it works
+
+1. **The creator picks the basket at launch** - up to ten assets with
+   weights, from a menu of several hundred.
+2. **A share of every trade accrues to the basket.**
+3. **The contracts convert on-chain** - through real pools, priced
+   against a verified floor, with no keeper, no bot, and no protocol fee
+   on conversions.
+4. **Holders are paid automatically, pro-rata.** There is nothing to
+   claim - delivery pushes as people trade.
+
+## The arithmetic - volume, not fee-share
+
+The single most misread fact about BaseStonk dividends: **they are a
+percentage of trading volume, not a cut of a pool's LP fee.**
+
+A token routing 3% to holders sends **\$300** of a \$10,000 buy straight
+to its holders, on that one trade. Volume compounds daily; market cap
+does not have to.
+
+What that adds up to at a 3% holder share:
+
+| Daily volume | Annual volume | Stock delivered to holders / year | At \$2M cap | At \$5M cap | At \$10M cap |
+|---|---|---|---|---|---|
+| \$200k | \$73M | ~\$2.2M | 110% | 44% | 22% |
+| \$500k | \$182M | ~\$5.5M | 275% | 110% | 55% |
+| \$1M | \$365M | ~\$11M | 550% | 220% | 110% |
+
+That \$2.2M is not more of the meme token - it is **real tokenized stock**,
+converted on-chain and pushed to holders' wallets as people trade. That is
+the entire pitch.
+
+<Note>
+This is arithmetic, not a promise. Volume is the input the model cannot
+guarantee: a token that stops trading stops paying. What the contracts do
+guarantee is the percentage - the hook takes it inside the swap, the split
+is immutable after launch, and the conversion to basket assets is
+floor-guarded on-chain.
+</Note>
+
+## The controller seat
+
+The basket's **composition** sits behind a controller seat. The creator
+holds it by default and can re-weight or swap the basket's assets on a
+live token, hand the seat to someone else, or renounce it.
+
+What the seat can never touch is the **percentage of volume** flowing to
+holders: that is fixed at launch and enforced by the hook, seat or no
+seat.
+
+Two one-way doors close the seat:
+
+- **Renounce at launch** - tick the box and the basket the launch
+  declared is the basket forever.
+- **Renounce later** - the same one-way door, any time. There is no
+  undo, for anyone - including the platform.
+
+Whether the seat is live or renounced is public on-chain state, so anyone
+can check whether a token's payout mix is a policy or a constant.
+
+Two things worth knowing before rebuilding a basket:
+
+- **Nothing in flight is lost.** Value sitting in a replaced slot keeps
+  draining to holders on the same pro-rata maths. A rebuild changes where
+  future dividends go, never where past ones went.
+- **A careless pick degrades gracefully.** A slot whose asset cannot be
+  priced simply pays the pair currency instead - nothing gets trapped.
+
+Driving the seat from code - the calls, what they enforce, and the
+readable state - is on the
+[on-chain page](/integration/onchain#the-basket-controller-seat).
+
+## The honest edges
+
+- The basket is the creator's **preference, not a guarantee of which asset arrives**. A slot whose asset cannot be priced or routed at fill time pays out in the pair currency instead - visibly, never silently lost.
+- Conversions are floor-guarded: a fill that would arrive below the verified fair value is refused and retried smaller, rather than accepted badly.
+- An empty basket is simply the classic behaviour - dividends in the pair.
+- On a token whose controller seat is live, the payout mix can change -
+  re-weighted by the controller, visibly, on-chain. If that matters to
+  you, read the distributor's `basketRenounced` flag before relying on
+  the mix.
+
+## Where to see it
+
+Any token whose card carries the **BASKET REWARDS** tag pays a basket. Its token page shows the designated assets and weights, each holder's running totals per asset, and a breakdown of what has been received and what is waiting.
+
+<Note>
+The platform's own token participates too: launches can route a share of their rewards into the \$BSTONK basket vault, which holds a portfolio paid out to \$BSTONK holders in kind.
+</Note>
+
+## Further reading
+
+<AccordionGroup>
+
+<Accordion title="How a holder's share is computed">
+
+Rewards accrue against an accumulator rather than being pushed to every
+wallet, because pushing to thousands of holders on every trade would cost
+more gas than it distributes.
+
+The contract tracks a running total per share:
+
+$$
+\text{acc} \mathrel{+}= \frac{\Delta_{\text{in}}}{S_{\text{total}}}
+$$
+
+and a holder's claimable balance is the distance the accumulator has moved
+since they were last settled:
+
+$$
+\text{owed}(h) = s_h \cdot \big(\text{acc} - \text{acc}_h\big)
+$$
+
+where $s_h$ is the holder's shares and $\text{acc}_h$ is their checkpoint.
+Both update whenever they trade or claim, so the arithmetic is $O(1)$ per
+holder no matter how many holders exist.
+
+</Accordion>
+
+<Accordion title="What the conversion is allowed to accept">
+
+Every automatic conversion has a floor, and the floor - not a slippage
+setting - is what bounds it:
+
+$$
+P = \min\!\big(P_{\text{gate}},\ P_{\text{market}}\big)
+$$
+
+The floor is that price less the route's real venue fees and a small
+slippage allowance that scales with the route and is capped overall.
+
+Taking the *lower* of the two prices matters more than it looks. Checking
+that two prices agree only requires an attacker to move both; taking the
+minimum requires them to move the one that is already lowest, which is the
+expensive direction.
+
+</Accordion>
+
+<Accordion title="Why a refusal is the design working">
+
+A conversion whose size cannot clear the floor is refused, and the
+contract retries at smaller sizes across later turns. So a slot with a
+thin market converts in small pieces rather than accepting a bad price
+once.
+
+If a route cannot clear the floor at any size, the slot **pays in the pair
+token instead**. Value always reaches holders; only the currency changes.
+
+</Accordion>
+
+<Accordion title="Time-weighted allocation, for basket vault rounds">
+
+Vault rounds weight a holder by balance *and* duration, not by a snapshot:
+
+$$
+w_h = \sum_{t \in [t_0,\,t_1]} b_h(t)\,\Delta t
+\qquad
+\text{share}_h = \frac{w_h}{\sum_j w_j}
+$$
+
+A single-block snapshot is trivially sniped - buy immediately before it,
+sell immediately after - and the block is announced on chain when the round
+commits. Integrating over the window removes the edge entirely: to earn a
+full share you have to actually hold for the window.
+
+</Accordion>
+
+</AccordionGroup>

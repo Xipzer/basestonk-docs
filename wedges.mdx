@@ -1,0 +1,92 @@
+---
+title: "Dividends, buybacks & burns"
+sidebarTitle: "Wedges"
+description: "A launch's tax can work for its holders automatically - on-chain, not on trust."
+icon: "fire"
+---
+
+A launch splits its trade tax into *wedges*. Each wedge runs inside the
+trading machinery itself - none of them is a bot that can be switched off.
+
+<Note>
+**Wedges are not Advanced-only.** Advanced mode is what lets you set the
+sizes of every wedge by hand. A Simple launch gets the dividend and
+\$BSTONK-basket wedges switched on by default, and the max wallet cap, on
+its fixed 1% fee. See [Simple vs Advanced](/launching#simple-vs-advanced).
+</Note>
+
+## Holder dividends
+
+A rewards wedge routes part of every trade's tax to a distributor
+contract that pays **every holder pro-rata, in the basket assets the
+creator designated** - up to 10 of them: tokenized equities, majors,
+ecosystem tokens. Conversion happens on-chain, automatically. Pair-currency
+payment is the fallback for empty baskets or slots that cannot be priced.
+Never in more of the token.
+
+- Payouts push automatically as people trade. There is nothing to claim.
+- A permissionless `claim()` exists for anyone who wants their accrual
+  immediately - optional, never required.
+- Your own running total shows on the token's page when your wallet is
+  connected.
+
+## \$BSTONK basket wedge
+
+A launch can route a share of its holder rewards into the platform basket
+vault. Like every other wedge, the share is fixed at launch and enforced
+by the hook.
+
+## Buyback & burn
+
+A burn wedge spends its share of every trade buying the token back from
+its own pool and sending it to the burn address - **in the same
+transaction as the trade that funded it**.
+
+Every burn is a public on-chain event. The token page shows the cumulative
+amount burned and bought back under *Tokenomics*.
+
+## Liquidity
+
+A liquidity wedge deepens the token's own pool with its share of the tax,
+raising the floor under later sellers.
+
+## Max wallet
+
+A launch can cap how much any one wallet may hold:
+
+- **Buys** that would breach the cap revert.
+- **Sells are never blocked** by it, whatever a holder owns.
+- The creator and the pool itself are exempt so the mechanics keep
+  working.
+
+<Note>
+  B20-mode launches ship without max wallet and without holder dividends -
+  the chain-native standard has no room for them. Tax, buyback & burn and
+  fee splits work unchanged. See [B20 mode](/b20-mode).
+</Note>
+
+## Further reading
+
+<Accordion title="How the wedges divide a tax">
+
+The tax splits into named wedges that must sum to the whole:
+
+$$
+\tau = w_{\text{payees}} + w_{\text{burn}} + w_{\text{liquidity}} + w_{\text{rewards}}
+$$
+
+Each is set at launch and **immutable afterwards**. The hook reads them
+inside the swap, so no route around the pool can pay a different split.
+
+A buyback wedge spends its share buying the token and sending it to the
+dead address, so the effect on supply is:
+
+$$
+S_{t+1} = S_t - \frac{V \cdot w_{\text{burn}}}{10{,}000 \cdot p_t}
+$$
+
+Burn pressure therefore scales with **volume and inversely with price** -
+the same dollar burns more tokens when the price is lower, which is when it
+matters most.
+
+</Accordion>

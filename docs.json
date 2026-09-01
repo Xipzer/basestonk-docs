@@ -1,0 +1,87 @@
+{
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
+  "name": "BaseStonk",
+  "appearance": {
+    "default": "dark"
+  },
+  "description": "Launch a token on Base and trade it from its first block - priced in USDC, ETH, BTC, tokenized stocks, or $BSTONK.",
+  "colors": {
+    "primary": "#0052FF",
+    "light": "#00C2FF",
+    "dark": "#0052FF"
+  },
+  "favicon": "/favicon.png",
+  "logo": {
+    "light": "/logo/wordmark.png",
+    "dark": "/logo/wordmark.png"
+  },
+  "navigation": {
+    "groups": [
+      {
+        "group": "Welcome",
+        "pages": [
+          "index",
+          "quickstart"
+        ]
+      },
+      {
+        "group": "Launching",
+        "pages": [
+          "launching",
+          "fees",
+          "dividend-baskets",
+          "wedges",
+          "vesting",
+          "cto",
+          "stock-pairs",
+          "b20-mode"
+        ]
+      },
+      {
+        "group": "Trading",
+        "pages": [
+          "trading",
+          "sell-mechanics",
+          "bstonk",
+          "referrals"
+        ]
+      },
+      {
+        "group": "Builders",
+        "pages": [
+          "integration/api",
+          "integration/agents",
+          "integration/onchain",
+          "integration/trading-bots",
+          "integration/contracts"
+        ]
+      },
+      {
+        "group": "Token safety",
+        "pages": [
+          "token-safety"
+        ]
+      }
+    ]
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "Launch a token",
+        "href": "https://basestonk.io/create"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "Open BaseStonk",
+      "href": "https://basestonk.io"
+    }
+  },
+  "footer": {
+    "socials": {
+      "x": "https://x.com/BaseStonk",
+      "website": "https://basestonk.io"
+    }
+  }
+}

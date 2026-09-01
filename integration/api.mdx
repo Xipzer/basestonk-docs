@@ -1,0 +1,266 @@
+---
+title: "REST API"
+description: "Every token, trade, candle and holder - the indexer's numbers, served."
+icon: "server"
+---
+
+Base URL: `https://api.basestonk.io`
+
+The API serves what BaseStonk's own interface reads. It currently
+requires no key and no authentication for reads. BaseStonk pools are
+Uniswap v4 pools, so raw-chain integrations that assume v2/v3 pair
+contracts will read \$0 liquidity - the API has already done the v4
+accounting for you.
+
+This page is the API and nothing else: endpoints, budgets, errors and
+shapes. Signing transactions, constructing PoolKeys, decoding reverts and
+watching events live on the [on-chain page](/integration/onchain).
+
+Building a machine client rather than reading along? The same surface is
+served under `/api/v1` with coded errors, one pagination envelope, a
+published OpenAPI document, wallet-keyed budgets and the `/prepare`
+endpoints - the [AI agents page](/integration/agents) is that contract.
+
+## Rate limits
+
+Budgets are per client IP (one IPv4 address, or one IPv6 /64), per
+minute, and the main lane is **cost-weighted rather than
+request-counted**:
+
+| Lane | Budget / min | Covers |
+|---|---|---|
+| `api` (shared) | **120 units** | every `/api/*` read |
+| `paircheck` | 30 | the pair-check lookups |
+| `uploads` | 6 | image and metadata uploads |
+| `ingest` | 20 | error and CSP reports |
+
+Requests consume units:
+
+| Operation | Units |
+|---|---:|
+| any read | 1 |
+| rows requested via `limit`, per 100 (`ceil(limit / 100)`) | +1 |
+| catalogue search (`q=` on the ecosystem endpoint) | +5 |
+| a `/prepare` call on the [agent surface](/integration/agents) | +10 |
+
+Costs stack: a `limit=1000` page costs 11 units, not 1. The practical
+consequence is to page politely - pulling the whole catalogue in a loop
+runs out ten times sooner than pulling it once.
+
+Every successful response carries the meter:
+
+```
+x-ratelimit-limit: 120
+x-ratelimit-remaining: 97
+```
+
+An exhausted budget answers:
+
+```json
+HTTP 429
+retry-after: 21
+
+{ "error": "rate limited", "retryAfter": 21 }
+```
+
+<Warning>
+  **Treat a 429 as "refused", never as "empty".** A client that maps a
+  failed fetch to an empty array will draw zeros for data that exists.
+  Honour `retry-after`, and prefer one batched call over per-item loops -
+  that is what the batch endpoints exist for.
+</Warning>
+
+## Errors
+
+Every error is JSON with a single `error` field. Branch on the status;
+`error` is human-readable text that may improve over time:
+
+| Status | Body | When | What to do |
+|---|---|---|---|
+| `400` | `{"error":"unknown chain"}` | a chain other than `base` | use `base` |
+| `400` | `{"error":"invalid address"}` | not `0x` + 40 hex | fix the address; do not retry unchanged |
+| `400` | `{"error":"bad interval"}` | an interval not in the candles list | pick from the list |
+| `400` | `{"error":{...}}` | validation failed - the object names the fields | fix the named fields |
+| `404` | `{"error":"token not found"}` | no row for that address | verify it; do not loop on an unchanged 404 |
+| `429` | `{"error":"rate limited","retryAfter":n}` | budget exhausted | wait `retry-after`, then resume |
+| `503` | `{"error":"..."}` | a dependency is unavailable | retry with capped backoff |
+
+Machine clients get the same errors with stable codes under `/api/v1` -
+[the code reference](/integration/agents#error-code-reference).
+
+## Retry policy
+
+- retry `429` after `retry-after` - never sooner, never as "empty"
+- retry `503` with capped exponential backoff and jitter
+- do not blindly retry `400` or `404` - the request will not become valid
+  by repetition
+- prefer one batched call over per-item loops; the batch endpoints exist
+  for exactly this
+
+## Pagination
+
+List endpoints take `limit` and `offset`. Defaults and maximums differ by
+endpoint because their rows differ in size:
+
+| Endpoint | Default | Max |
+|---|---|---|
+| `/tokens` | 24 | 200 |
+| `/tokens/{address}/candles` | 300 | 1000 |
+| `/tokens/{address}/trades` | 25 | 200 |
+| `/tokens/{address}/holders` | 25 | 200 |
+| `/ecosystem` | 50 | 1000 |
+| `/basket-assets` | 200 | 1000 |
+
+List responses share one envelope - the rows, plus enough to page:
+
+```json
+{ "sort": "trending", "total": 512, "hasNext": true, "tokens": [ ... ] }
+```
+
+## Stability
+
+Responses evolve **additively**: new fields appear, existing fields keep
+their meaning, and nothing is renamed or removed without notice on this
+page first. Write clients that ignore unknown fields. Where a field was
+superseded, the old one is backfilled rather than dropped - `taxBps`
+still carries the rate for pre-V6 launches whose `buyTaxBps` and
+`sellTaxBps` are null.
+
+## Endpoints
+
+### List every token
+
+```bash
+GET /api/launchpad/tokens?chain=base
+```
+
+Returns every launch with pair, hook, price, market cap, volume, holder
+count and tax shape. Query parameters: `sort` (`trending`, `age`,
+`marketcap`, `volume`, `holders`), `dir`, `limit`, `offset`, `q`
+(search), `pair` (filter by pair address), `generation` (`v1`..`v6`,
+`simple`, `b20`) and `features`.
+
+Tax rates come as `buyTaxBps` and `sellTaxBps` - independent on V6
+launches, backfilled equal to `taxBps` for older generations. A record
+where both are null is an older launch whose rate is only in `taxBps`;
+treat that value as both directions.
+
+### One token
+
+```bash
+GET /api/launchpad/tokens/{address}?chain=base
+```
+
+### Candles
+
+```bash
+GET /api/launchpad/tokens/{address}/candles?interval=1m&chain=base
+```
+
+Intervals: `1s`, `5s`, `15s`, `1m`, `5m`, `15m`, `1h`. Omitting the
+parameter defaults to `5m`; an unknown value returns
+`400 {"error":"bad interval"}`.
+
+### Trades
+
+```bash
+GET /api/launchpad/tokens/{address}/trades?chain=base
+```
+
+Takes `limit` and `offset`.
+
+### Holders
+
+```bash
+GET /api/launchpad/tokens/{address}/holders?chain=base
+```
+
+Takes `limit` and `offset`.
+
+### A wallet's dividends on a token
+
+```bash
+GET /api/launchpad/tokens/{address}/rewards/{wallet}?chain=base
+```
+
+Received so far, plus the live pending amount from the distributor.
+
+### A wallet's holdings
+
+```bash
+GET /api/launchpad/holders/{address}/tokens?chain=base
+```
+
+Every BaseStonk token the wallet holds.
+
+### A creator's launches
+
+```bash
+GET /api/launchpad/creators/{address}/tokens?chain=base
+```
+
+### Burn totals
+
+```bash
+GET /api/launchpad/burn/base
+```
+
+### Pair prices in USD
+
+```bash
+GET /api/launchpad/pairusd/base?pair=0x…
+```
+
+### Basket assets
+
+```bash
+GET /api/launchpad/basket-assets/base
+```
+
+The basket-eligible menu, in one call. The response has two halves:
+
+- `registered` - the whole curated set (stables, majors, tokenized
+  stocks and RWAs), each with `address`, `symbol`, `name`, `decimals`,
+  `category` (`Crypto & Stables`, `Base Memes`, `Stocks & RWAs`),
+  `launchable`, and `needsIssuance` flagging B20 stocks not yet issued
+  on-chain.
+- `ecosystem` - the admitted ecosystem catalogues, ranked by market cap,
+  priced rows only. `limit` (default 200, max 1000) and `offset` page
+  this half; the registered half always ships whole.
+
+<Note>
+  Eligibility is ultimately the chain's word, not this cache's - the
+  on-chain vetting check and the post-launch rebuild rules are on the
+  [on-chain page](/integration/onchain#launching-programmatically).
+</Note>
+
+### The ecosystem catalogue
+
+```bash
+GET /api/launchpad/ecosystem/base
+```
+
+The admitted ecosystem tokens - what a gated launch can pair with.
+Parameters: `eco` (`clanker`, `virtuals`, `bankr`) to browse one
+catalogue ranked by market cap, `q` to search all of them (name, symbol,
+or a pasted address), `limit`, `offset`. One of `eco` or `q` is
+required. A `q` search costs 5 extra units - see
+[rate limits](#rate-limits).
+
+### The route for a gated launch
+
+```bash
+GET /api/launchpad/gatedroute/base?pair=0x…
+```
+
+Returns the gate-verified route, `issuerFactory` and `usdPerPair` for a
+gated pair - what an integrator passes to `launchGated` on the
+[on-chain page](/integration/onchain#launching-programmatically).
+
+### Venue stats
+
+```bash
+GET /api/launchpad/stats/base
+```
+
+Totals across the venue: tokens, trades, volume, holders.

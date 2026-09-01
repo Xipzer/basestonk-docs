@@ -1,0 +1,108 @@
+---
+title: "Stock pairs"
+description: "Price your launch in shares of NVIDIA, SpaceX or Coinbase."
+icon: "chart-candlestick"
+---
+
+Pair a launch with a tokenized equity and your token is quoted in shares
+of it. The chart moves with the stock, and the opening price is read from
+a live on-chain feed at the moment you sign.
+
+## Two kinds of stock token
+
+<CardGroup cols={2}>
+  <Card title="Coinbase B20 stocks" icon="building-columns">
+    NVDAc, COINc and friends - issued in the Coinbase app as chain-native
+    B20 tokens. Four are issued on-chain - NVDAc, GOOGLc, AAPLc, METAc -
+    and trade in live pools against USDC. The other nine have **no
+    on-chain market yet**: buyers must already hold the stock, and ETH
+    cannot route into them.
+  </Card>
+  <Card title="ST0x wrapped stocks" icon="arrows-rotate">
+    Eleven 1:1 backed wrapped equities and ETFs **with real DEX
+    liquidity** - anyone can buy a token paired with these using plain
+    ETH. All eleven are oracle-priced, by one of two kinds of oracle.
+    **Chainlink equity feeds:** wtCOIN, wtNVDA, wtMSTR, wtSPCX. **Routed
+    price feeds**, for the ETFs and foreign listings Chainlink does not
+    cover: wtSGOV, wtSKHY, wtSPYM, wtDRAM, wtQQQM, wtIAU, wtCEG.
+  </Card>
+</CardGroup>
+
+The create form tells you which kind you are choosing at the moment you
+pick it.
+
+## How a pair becomes launchable
+
+Every launchable pair carries an on-chain price source - a Chainlink feed
+where one exists, or a **routed price feed** where one does not: a small
+on-chain contract that walks a fixed route through real pools and derives
+the price from what those pools would actually pay.
+
+Either way, a feed whose answer is stale or dishonest refuses rather than
+guessing - and a launch priced off a refusing feed simply does not
+happen.
+
+## Routed feeds, and why a pair can go quiet
+
+A routed feed does not just read a price - it measures **depth**, and it
+refuses to answer when the market behind it is too thin to be honest.
+
+Each hop of the route is measured by how much can actually be sold into
+its pool before the price moves materially. Every feed is deployed with a
+floor, and if any hop falls under it the feed reverts with `HopTooThin`
+rather than returning a number.
+
+<Note>
+This is the design working, not a fault. The alternative is a launch
+priced off a pool that a \$500 trade could move - which is how a token
+opens at a market cap that was never real. A feed that refuses is a feed
+telling the truth about its own market.
+</Note>
+
+When it happens, the create form shows a **"Too thin"** badge on the
+pair and blocks the launch button, with the reason stated.
+
+It is not permanent and nothing is stuck. **The pair reopens by itself
+the moment its market deepens** - no action from the creator or from
+BaseStonk. Tokens already launched against that pair are completely
+unaffected: the feed only prices the *opening* of a new pool, never one
+that exists.
+
+A pair whose market has thinned for good is re-curated onto a deeper
+venue rather than having its floor lowered - lowering the floor would
+keep the pair open by agreeing to price it badly.
+
+## Stocks as dividend assets
+
+Pairs are not the only place equities appear. Stocks and RWAs can also be
+**dividend assets**: a launch can pay its holders in tokenized equities
+through its payout basket. See [Wedges](/wedges).
+
+<Note>
+  \$BSTONK itself is priced by a purpose-built adapter reading the
+  BSTONK/USDC pool's own price times the USDC feed. It is a spot price: a
+  determined trader can move it within a transaction, which can misprice
+  the *opening* of a new launch that chose this pair - never a pool that
+  already exists.
+</Note>
+
+## Further reading
+
+<Accordion title="How a stock-paired chart is priced">
+
+A stock-paired launch reads its opening price through a Chainlink feed, so
+the same market cap in dollars implies a different token price depending on
+what the share is worth that day:
+
+$$
+p_0 = \frac{M}{S \cdot P_{\text{share}}}
+$$
+
+Equity feeds carry a **96-hour** staleness bound rather than the usual 24,
+because equity markets close over the weekend. A 24-hour bound would
+fail closed every Saturday and refuse every launch until Monday.
+
+If a feed cannot answer at all, the launch reverts. That is deliberate: a
+launch priced off a dead oracle is worse than a launch that did not happen.
+
+</Accordion>

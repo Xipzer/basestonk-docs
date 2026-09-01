@@ -1,0 +1,225 @@
+---
+title: "On-chain integration"
+sidebarTitle: "On-chain"
+description: "The router, the PoolKey, the launch tuple, the events to watch and the reverts to decode - everything below the API."
+icon: "link"
+---
+
+Everything on this page happens on Base mainnet (chain id 8453), against
+the contracts on the [contract reference](/integration/contracts). If you
+only need indexed data - prices, candles, holders - use the
+[REST API](/integration/api) instead; it has already done the v4
+accounting. This page is for code that signs transactions or reads the
+chain directly.
+
+## Trading
+
+BaseStonk pools live in the canonical Uniswap v4 PoolManager, with a
+custom fee hook per launcher generation. Wallets cannot call the
+PoolManager directly (v4 swaps happen inside an unlock callback), so
+trade through BaseStonk's router.
+
+### The router
+
+```solidity
+// SwapRouter - see the contract reference for the address
+function swap(
+    PoolKey key,      // (currency0, currency1, fee, tickSpacing, hooks)
+    bool zeroForOne,  // false = buy the token, true = sell it
+    uint256 amountIn,
+    uint256 minOut,
+    address to
+) returns (uint256 amountOut)
+```
+
+Exact-in only. Approve the input currency to the router first.
+
+### Constructing the PoolKey
+
+For any BaseStonk token:
+
+| Field | Value |
+|---|---|
+| `currency0` | the launched token (always sorts below its pair) |
+| `currency1` | the pair token - from the token's API record |
+| `fee` | `3000` |
+| `tickSpacing` | `60` |
+| `hooks` | the token's own hook - the `curve` field in the API |
+
+<Warning>
+  Different launchers install different hooks, and a pool's identity
+  includes its hook. There are six generations of hooks - the list is on
+  the [contract reference](/integration/contracts) page. An indexer that
+  assumes one hook for every pool computes pool ids that the other
+  launcher's swaps never match - those tokens will chart flat while
+  trading normally.
+</Warning>
+
+### Three things every integration must handle
+
+1. **The tax is taken inside the swap** by the hook, and since V6 the buy
+   and sell rates are independent. Quote `minOut` with at least the
+   direction's rate of headroom or the swap reverts. The rates are in the
+   token's API record as `buyTaxBps` and `sellTaxBps` (older generations
+   carry one `taxBps` for both directions). The V6 hook also answers
+   directly:
+
+   ```solidity
+   // AdvancedFeeHookV6 - the rate a swap in this direction pays right now
+   function taxFor(PoolKey key, bool zeroForOne) external view returns (uint16)
+   ```
+
+2. **A fresh V6 launch may be inside its anti-sniper window.** For up to
+   30 minutes after launch, buys can pay a toll that starts as high as 99%
+   and decays linearly to the token's buy rate. `taxFor` returns the live
+   decayed rate, so quote from it rather than from the stored `buyTaxBps`
+   until the window passes. Sells never pay the toll. See
+   [Launching](/launching#the-anti-sniper-toll).
+3. **Max wallet reverts oversized buys.** A buy that would push the
+   recipient past a token's holding cap reverts - surface it as *reduce
+   size*, not a generic failure. Oversized sells near the launch price can
+   also revert with `CurrencyNotSettled`; see
+   [the sell floor](/sell-mechanics).
+
+## Launching programmatically
+
+The V6 launch tuple changed shape from V5. The fields, in order:
+
+```solidity
+struct LaunchParams {
+    string  name;
+    string  symbol;
+    uint256 supply;
+    string  metadataUri;
+    address creator;
+    address pairToken;
+    uint256 marketCapUsd;
+    uint16  buyTaxBps;        // was one taxBps in V5
+    uint16  sellTaxBps;       // independent of buyTaxBps, both capped at 1000
+    uint16  burnBps;
+    uint16  liquidityBps;
+    uint256 buyPair;          // dev buy, in pair-token units
+    uint16  maxWalletBps;
+    uint16  rewardsBps;
+    uint64  vestCliff;        // seconds; see the vesting page
+    uint64  vestDuration;     // seconds; 0 = no vault, dev buy pays to creator
+    uint32  sniperWindow;     // seconds, 10 to 1800; 0 = no toll
+    uint16  sniperStartBps;   // toll's opening rate; must exceed buyTaxBps
+    PayoutBasket basket;
+    bytes32 salt;
+}
+
+struct PayoutBasket {
+    address[] tokens;
+    uint16[]  weights;
+    address[] issuers;
+    uint16    vaultShareBps;
+    bool      renounceBasket; // freeze the basket in the launch transaction
+}
+```
+
+`launchDirect` and `launchGated` take the same fields with
+`startSqrtPriceX96` in place of `marketCapUsd`.
+
+<Note>
+  The token's CREATE2 salt is bound to the caller:
+  `keccak256(abi.encode(msg.sender, salt))`. A copier who sees your pending
+  launch in the mempool cannot deploy your token address first - the same
+  salt from a different sender derives a different address.
+</Note>
+
+Basket assets in the launch tuple must pass the RoutedQuoteGate's
+`isVetted` check (or `isVettedBy` with the matching entry in
+`basket.issuers` for ecosystem tokens) - the rewards factory refuses the
+launch otherwise. The whole eligible menu is one call:
+[the basket-assets endpoint](/integration/api#basket-assets).
+
+Two constraints the launcher enforces on the new fields: a nonzero
+`vestDuration` requires a nonzero `buyPair` (`VestRequiresDevBuy`), and a
+vested dev buy skips the 10% cap - the whole buy routes into the vault
+instead. The launcher emits `VaultCreated(token, vault, beneficiary,
+vestCliff, vestDuration)` in the launch transaction, so an indexer reading
+launches sees every vesting schedule at birth. See [Vesting](/vesting).
+
+## The basket controller seat
+
+A launch's [payout basket](/dividend-baskets) can be rebuilt after launch
+by whoever holds its controller seat. The seat lives on the token's
+dividend distributor - find it from the token contract's
+`rewardTracker()` view, or from the `rewardsDistributor` field of the
+token's [API record](/integration/api). From the controller address,
+three calls:
+
+```solidity
+// HolderRewards - the token's dividend distributor
+function setBasket(address[] tokens, uint16[] weights) external  // rebuild the basket
+function transferBasketControl(address to) external              // hand the seat over
+function renounceBasket() external                               // burn it, forever
+```
+
+What `setBasket` enforces: one to ten slots, weights summing to exactly
+10,000 bps, no duplicates, no zero addresses or zero weights, and never
+the launch token itself. Empty arrays are legal and mean *back to pair
+currency* - the same state a launch that never set a basket is in.
+
+There is **no curated menu on rebuilds**: the launch-time vetting applies
+only to the launch, and a slot whose asset cannot be priced or routed
+through the floor-guarded conversion machinery pays the pair currency
+instead. Value in a replaced slot moves to a residual entry that keeps
+draining to holders on the same pro-rata maths.
+
+The state is all readable: `basketController`, `basketRenounced`,
+`basketSize()` and `basketSlot(i)` - the latter returning each slot's
+token, weight, and what it still holds. Every call above reverts once the
+seat is renounced.
+
+## Watching the chain
+
+New launches emit `AdvancedLaunched` from the launcher contracts, carrying
+the pair token, the opening `sqrtPriceX96` and (on V6) both tax rates
+directly - everything needed to construct the pool key and start indexing
+from the first block. A launch with a vested dev buy also emits
+`VaultCreated(token, vault, beneficiary, vestCliff, vestDuration)` in the
+same transaction, so the vesting schedule is public from block one.
+
+Per-swap fees are public too: the hook emits
+`FeeTaken(poolId, currency, platformFee, creatorFee)` inside every taxed
+swap, which is how the platform's own indexer attributes fee flow.
+
+Addresses for every emitter are on the
+[contract reference](/integration/contracts).
+
+## Decoding reverts
+
+### `HopTooThin` - the revert that is not your fault
+
+A launch priced through a routed feed reverts with
+
+```solidity
+error HopTooThin(uint256 hop, uint256 usd, uint256 floorUsd)   // 0xb5377e60
+```
+
+when the pair's pricing route no longer holds enough for the feed to
+answer honestly. **It is raised by a contract the launcher *calls*, not by
+the launcher**, so a naive decoder against the launcher's ABI sees only
+the bare selector - decode against the routed-feed ABI or match
+`0xb5377e60` directly.
+
+Nothing about the tuple fixes it: retrying, lowering the dev buy or
+changing the market cap all revert the same way, because the feed refuses
+before the launch is priced at all. One user hit this wall 73 times in a
+night. **Check the pair before building the transaction** - the
+[tokens endpoint](/integration/api) reports a pair whose feed is refusing,
+and the create form blocks it outright. Either pick a deeper pair or wait:
+the feed reopens by itself when liquidity returns. Background in
+[stock pairs](/stock-pairs#routed-feeds-and-why-a-pair-can-go-quiet).
+
+### The others worth naming
+
+| Revert | Raised when | Surface it as |
+|---|---|---|
+| `CurrencyNotSettled` | an oversized sell asks the pool for more pair than it holds near the launch price | *reduce size* - see [the sell floor](/sell-mechanics) |
+| `DevBuyTooLarge` | an unvested dev buy exceeds 10% of supply at the opening cap | lower the buy, vest it, or raise the cap |
+| `VestRequiresDevBuy` | `vestDuration > 0` with `buyPair == 0` | a lock needs something to lock |
+| `TaxTooHigh` | a tax field above 1000 bps | 10% is the ceiling per side |
+| `MarketCapOutOfRange` | the opening cap is outside the band the launcher allows | see [the market-cap band](/launching#further-reading) |

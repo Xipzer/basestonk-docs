@@ -1,0 +1,66 @@
+---
+title: "The sell floor"
+description: "Why liquidity here cannot be pulled, and the one honest consequence of that."
+icon: "water"
+---
+
+BaseStonk pools are seeded **single-sided**: 99% of supply enters the pool
+priced from the opening tick upward, and the pair side fills up as people
+buy.
+
+This is the mechanism behind the two biggest guarantees on the venue:
+
+- **Nobody can pull the liquidity** - the launcher holds nothing after
+  launch and no admin exists over the pool.
+- **The launch price is a floor** - the pool cannot pay out below the
+  price it opened at, because below that price there is nothing on the
+  other side to pay with.
+
+## The consequence: pool depth on the way down
+
+When a token's price sits near its launch price, the pool's pair-side
+depth is thin. A very large sell can ask for more of the pair asset than
+the pool holds - and the whole transaction is **refused** rather than
+partially filled.
+
+<Note>
+  This is not a honeypot, and it is not a locked token: selling in smaller
+  clips always works, and the interface tells you when a sell exceeds the
+  pool's remaining depth instead of letting it fail cryptically. A token
+  that has traded up from its launch price has depth beneath it and sells
+  normally.
+</Note>
+
+What a sell delivers is also net of the token's **sell tax**, set
+independently of its buy tax - the token page shows both rates. See
+[Fees](/fees).
+
+Integrating rather than trading? The exact revert an oversized sell
+raises, and how to surface it, is in the
+[revert table](/integration/onchain#decoding-reverts).
+
+## Further reading
+
+<Accordion title="Why the floor holds, in one inequality">
+
+The pool opens as a one-sided range above the launch price, so there is no
+resting bid put there by the launcher. What supports the price is the
+liquidity that arrives as people buy.
+
+For a concentrated position the amount released by a move from
+$\sqrt{P_a}$ to $\sqrt{P_b}$ is:
+
+$$
+\Delta y = L\,\big(\sqrt{P_a} - \sqrt{P_b}\big)
+$$
+
+which is what "depth" means everywhere in this protocol: not the pool's
+balance, but **how much comes out for a given move**. A pool holding a
+large balance in a narrow band far from the current price is shallow where
+it counts.
+
+It is also why the protocol ranks routes by what a move actually releases
+rather than by pool size - the two disagree often, and only one of them
+is what a trader experiences.
+
+</Accordion>

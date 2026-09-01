@@ -1,0 +1,111 @@
+---
+title: "Contract reference"
+description: "Every address, source-verified on Basescan."
+icon: "file-contract"
+---
+
+All BaseStonk contracts are deployed on **Base mainnet (chain id 8453)**
+and source-verified - each link opens directly at the verified code.
+
+## Current (V6)
+
+Addresses here are read from the live deployment and every one is
+source-verified on Basescan. The V6 stack deployed at blocks
+50,637,223-50,637,288.
+
+| Contract | Address |
+|---|---|
+| AdvancedLauncherV6 | [`0x80459E17eC8269f058152169e58022a70ed9F1fa`](https://basescan.org/address/0x80459E17eC8269f058152169e58022a70ed9F1fa#code) |
+| AdvancedFeeHookV6 | [`0x7C672F3850afadCb8f83478E0A2a90D109fA6044`](https://basescan.org/address/0x7C672F3850afadCb8f83478E0A2a90D109fA6044#code) |
+| HolderRewardsFactory | [`0x029c3CC99eCBA10Fc1616773be37FF86ffe5C395`](https://basescan.org/address/0x029c3CC99eCBA10Fc1616773be37FF86ffe5C395#code) |
+| LaunchVestingFactory | [`0xD319b426573877613E66932edd3aA40C0CAbC56C`](https://basescan.org/address/0xD319b426573877613E66932edd3aA40C0CAbC56C#code) |
+| GatedLaunchLens | [`0x10459d4fb21860692127b291F27bA4C9985B74c7`](https://basescan.org/address/0x10459d4fb21860692127b291F27bA4C9985B74c7#code) |
+| LaunchControl | [`0x6cC865BB382cEB3D876F99Dfe40C44C1AeE70a6E`](https://basescan.org/address/0x6cC865BB382cEB3D876F99Dfe40C44C1AeE70a6E#code) |
+| RoutedQuoteGate | [`0x27538A4F1E3f7BF9d6Fa4A56d7156c67Dc843176`](https://basescan.org/address/0x27538A4F1E3f7BF9d6Fa4A56d7156c67Dc843176#code) |
+| CuratedRoutes | [`0x283e15463fF4E6390892402c02cA9ec744be9bf4`](https://basescan.org/address/0x283e15463fF4E6390892402c02cA9ec744be9bf4#code) |
+| BasketVaultV2 | [`0x99FeB612f130c5e981dbC0a96c436bC06ca0fE9E`](https://basescan.org/address/0x99FeB612f130c5e981dbC0a96c436bC06ca0fE9E#code) |
+| SwapRouter | [`0x161026041Cf3701FC8C2f11D1a9121681Be3718f`](https://basescan.org/address/0x161026041Cf3701FC8C2f11D1a9121681Be3718f#code) |
+| PairOracleRegistry | [`0xd5a639149F9E0af9b00E9370110fc8847a71b867`](https://basescan.org/address/0xd5a639149F9E0af9b00E9370110fc8847a71b867#code) |
+
+### The B20 rail
+
+[B20 mode](/b20-mode) launches through its own launcher and hook on the
+same generation, not through the ones above.
+
+| Contract | Address |
+|---|---|
+| AdvancedLauncherB20V6 | [`0x445F7d3533f956FE25eAF55EbadF3d2aDE153151`](https://basescan.org/address/0x445F7d3533f956FE25eAF55EbadF3d2aDE153151#code) |
+| AdvancedFeeHookV6 (B20) | [`0xAA4025e5667719dB2ceaA0c1eD8801cE7bdfa044`](https://basescan.org/address/0xAA4025e5667719dB2ceaA0c1eD8801cE7bdfa044#code) |
+
+### Linked libraries
+
+The launcher and hook delegate to six libraries deployed alongside them.
+They hold no state and take no constructor arguments, but a builder
+reproducing a launch's bytecode needs their addresses.
+
+| Library | Address |
+|---|---|
+| CrossableDepth | [`0x2c6592e4b9a02f9f597bb0bf477cbb156fac83e7`](https://basescan.org/address/0x2c6592e4b9a02f9f597bb0bf477cbb156fac83e7#code) |
+| ConvertVenues | [`0x08c9378a8aff30edbf9489ebbd73fec6183ba6be`](https://basescan.org/address/0x08c9378a8aff30edbf9489ebbd73fec6183ba6be#code) |
+| ConvertPricing | [`0x2d8c7ee2665f60bbb238589cfea5576f37f3780e`](https://basescan.org/address/0x2d8c7ee2665f60bbb238589cfea5576f37f3780e#code) |
+| LaunchRewards | [`0x113dcdf45dbf3869a47517c1dccdea482098d0de`](https://basescan.org/address/0x113dcdf45dbf3869a47517c1dccdea482098d0de#code) |
+| LaunchOpening | [`0xf23570f7885a3f8dea2efcf14ec0e93cd129715b`](https://basescan.org/address/0xf23570f7885a3f8dea2efcf14ec0e93cd129715b#code) |
+| BasketControl | [`0xb65a995e5d1cd7d0d3412c13c57c77c473cde333`](https://basescan.org/address/0xb65a995e5d1cd7d0d3412c13c57c77c473cde333#code) |
+
+The launcher, hook and factories are bound to each other immutably in both
+directions - the hook only configures pools for this launcher, the rewards
+and vesting factories only answer this launcher's calls - so any one of
+these addresses proves the rest. The RoutedQuoteGate, SwapRouter and
+PairOracleRegistry carry over from V5 unchanged.
+
+What V6 added: separate buy and sell tax rates, the
+[dev-buy vesting vault](/vesting), the anti-sniper toll, a payout basket
+controller seat with renounce-at-launch, and
+[community takeover through LaunchControl](/cto).
+
+## Retired generations
+
+Retired launchers keep working on chain - their pools and tokens trade
+unchanged - but the platform no longer launches through them, and
+launches made through them after retirement are not listed.
+
+| Contract | Status | Address |
+|---|---|---|
+| Launcher V5 | retired at block 50,637,277 | [`0xAE31b51460dA9C7Cbf906CbaF39Ba55e47c3De42`](https://basescan.org/address/0xAE31b51460dA9C7Cbf906CbaF39Ba55e47c3De42#code) |
+| Fee hook V5 | retired at block 50,637,277 | [`0x201c4916c085032FB49f0B778eFA98DF23672044`](https://basescan.org/address/0x201c4916c085032FB49f0B778eFA98DF23672044#code) |
+| Launcher V4 | retired | [`0x5263E7264c817909893Aa9a00Dc2f4B433040fc1`](https://basescan.org/address/0x5263E7264c817909893Aa9a00Dc2f4B433040fc1#code) |
+| Fee hook V4 | retired | [`0xBefF407B7062E2fE15928960A58AEc93b0c76044`](https://basescan.org/address/0xBefF407B7062E2fE15928960A58AEc93b0c76044#code) |
+| Launcher V3 | retired | [`0xDE15bf7592970e2458239a308CDF727e8780C62A`](https://basescan.org/address/0xDE15bf7592970e2458239a308CDF727e8780C62A#code) |
+| Fee hook V3 | retired | [`0xE6B2B3e59D5df7827EB0A7915675DB66ab12a044`](https://basescan.org/address/0xE6B2B3e59D5df7827EB0A7915675DB66ab12a044#code) |
+| Launcher V2 | retired | [`0x74655F443D25c5d401a582c68dEA02ACd170E12f`](https://basescan.org/address/0x74655F443D25c5d401a582c68dEA02ACd170E12f#code) |
+| Fee hook V1/V2 | retired | [`0x03d2434D5A9AB7FB46bD3c7956A7C62E0Cd46044`](https://basescan.org/address/0x03d2434D5A9AB7FB46bD3c7956A7C62E0Cd46044#code) |
+| Launcher (B20 v1) | retired at block 50,640,490 | [`0x7DEa3Db7988f0c70E6D51920BAE8cAFBe943e6D5`](https://basescan.org/address/0x7DEa3Db7988f0c70E6D51920BAE8cAFBe943e6D5#code) |
+| Fee hook (B20 v1) | retired at block 50,640,490 | [`0x805975d27518e3E23c4838802d9DdA7302DcA044`](https://basescan.org/address/0x805975d27518e3E23c4838802d9DdA7302DcA044#code) |
+
+<Note>
+The V4 and V5 rows are the last deployment of each generation. Both
+generations went through revisions before retirement, so a pool launched
+mid-generation may name an address not listed here - read the pool's hook
+rather than assuming, and any launcher proves its own hook through
+`hook()`.
+</Note>
+
+## Tokens
+
+| Contract | Address |
+|---|---|
+| \$BSTONK | [`0x0F61Edbfe6Cd86024C0f210c0695B08df55fdfc9`](https://basescan.org/address/0x0F61Edbfe6Cd86024C0f210c0695B08df55fdfc9#code) |
+| BSTONK holder rewards | [`0x7f03e814eb1b5dd0c587dc637eea591bce0cd2ce`](https://basescan.org/address/0x7f03e814eb1b5dd0c587dc637eea591bce0cd2ce#code) |
+
+## Infrastructure (not ours)
+
+| Contract | Address |
+|---|---|
+| Uniswap v4 PoolManager | [`0x498581fF718922c3f8e6A244956aF099B2652b2b`](https://basescan.org/address/0x498581fF718922c3f8e6A244956aF099B2652b2b#code) |
+
+## Pool parameters
+
+Every BaseStonk pool uses fee `3000` and tick spacing `60`, with the
+launcher's hook installed. The full PoolKey shape, the launch tuple and
+the events each contract emits are on the
+[on-chain page](/integration/onchain).
