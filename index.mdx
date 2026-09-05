@@ -1,103 +1,64 @@
 ---
 title: "What BaseStonk is"
 sidebarTitle: "Overview"
-description: "A launchpad on Base and Robinhood Chain where every token trades in a real Uniswap v4 pool from its first block."
+description: "A token launchpad on Base and Robinhood Chain. Every launch is a live Uniswap v4 pool from its first block."
 icon: "rocket"
 ---
 
 <img src="/images/banner-bstonk-coin.webp" alt="BaseStonk" style={{ width: '100%', borderRadius: '14px' }} noZoom />
 
-BaseStonk launches tokens on **Base** and on **Robinhood Chain**. No
-bonding curve, no graduation: creating a token opens a real Uniswap v4
-pool in the same transaction, and trading starts immediately.
-[What differs between the two chains &rarr;](/chains)
-
-What you see on a BaseStonk chart is a pool price from the first candle -
-not a curve that later migrates somewhere else.
-
-## Dividends in the assets you actually want
-
-A launch here can pay its holders in up to ten assets of the creator's
-choosing - tokenized stocks, ETFs, majors, ecosystem tokens - delivered
-automatically as people trade.
-
-The dividends are a percentage of **trading volume**, not a slice of an
-LP fee. A token routing 3% to holders on \$200k daily volume delivers
-roughly **\$2.2M of real stock a year**.
-[How dividend baskets work &rarr;](/dividend-baskets)
-
-## The dual flywheel
-
-\$BSTONK, the platform's own token, has **two buyback-and-burn engines**.
-
-The first is ordinary: a share of its own trading buys and burns it,
-inside the swap.
-
-The second is not. **The platform's cut of every launch on Base** is
-converted to \$BSTONK and burnt, automatically. A token that has nothing
-to do with \$BSTONK still burns \$BSTONK simply by trading. (On Robinhood
-Chain the platform's cut is held as USDG instead - \$BSTONK is a Base
-token. [Why &rarr;](/chains#where-the-platforms-cut-goes))
-
-<Note>
-**Over 9.6% of supply is already gone** - more than 96 million tokens
-burnt, and the number only moves one way.
-</Note>
-
-Holders are paid twice over too: **USDC dividends** from \$BSTONK's own
-trading, plus a share of the **platform basket vault** - a portfolio of
-62 asset slots fed by launches across the whole venue.
-
-[The dual flywheel and dual dividends, in full &rarr;](/bstonk)
-
-## The three facts that matter
+One transaction creates a token, opens its Uniswap v4 pool and starts
+trading. No bonding curve. No graduation. No migration.
 
 <CardGroup cols={3}>
-  <Card title="No curve, no graduation" icon="chart-line">
-    A launch is a live Uniswap v4 pool from block one. Real liquidity,
-    real price, immediately.
+  <Card title="Live from block one" icon="chart-line">
+    Real liquidity, real price, immediately.
   </Card>
   <Card title="Liquidity cannot be pulled" icon="lock">
-    The launcher contract must end every launch holding nothing - the
-    transaction reverts otherwise. No admin key exists over a live pool.
-    Not ours, not the creator's.
+    The launcher must end every launch holding nothing, or the transaction reverts. No admin key over any pool.
   </Card>
-  <Card title="The launch price is a floor" icon="shield">
-    Single-sided liquidity cannot pay out below the price the pool opened
-    at. That is what makes it unruggable.
+  <Card title="Launch price is a floor" icon="shield">
+    Single-sided liquidity cannot pay out below the opening price.
   </Card>
 </CardGroup>
 
-## Pick what your token is priced in
+## Two chains, one venue
 
-Launches choose their quote asset. On Base:
+| | Base | Robinhood Chain |
+|---|---|---|
+| Chain id | 8453 | 4663 |
+| Pair against | USDC, USDT, WETH, cbBTC, tokenized stocks, ecosystem tokens, \$BSTONK | USDG, WETH, 194 Robinhood stocks |
+| Platform fee goes to | \$BSTONK buyback and burn | held as USDG |
 
-- **Stables and majors** - USDC, USDT, WETH, cbBTC
-- **Base-native tokens** - VIRTUAL, AERO
-- **Tokenized stocks** - shares of NVIDIA, Coinbase, MicroStrategy,
-  SpaceX and more
-- **Ecosystem tokens** - any admitted Clanker, Virtuals or Bankr token,
-  several hundred pairs
-- **\$BSTONK** - the platform's own token
+[Everything that differs &rarr;](/chains)
 
-On Robinhood Chain: **USDG**, **WETH**, and any of the **194 Robinhood
-Stock Tokens** - NVIDIA, Apple, Tesla, the S&P 500 - that clears the
-depth gate.
+## What holders get
 
-A stock-paired token's chart moves with the stock. Whatever the pair, the
-opening price is read on-chain at the moment you sign - never typed in,
-never taken on trust. [How stock pairs work &rarr;](/stock-pairs)
+Dividends are a **percentage of trading volume**, paid automatically in
+up to ten assets the creator chose - stocks, ETFs, majors.
 
-## What we cannot do
+<Tip>
+A token routing 3% to holders on \$200k daily volume pays holders about
+\$6,000 a day, in the assets themselves.
+</Tip>
 
-The claims above are only worth what the contracts enforce, so here is
-the list of powers that do not exist:
+[Dividend baskets &rarr;](/dividend-baskets)
 
-- **We cannot touch a live pool.** No pause, no fee change, no liquidity
-  withdrawal.
-- **We cannot mint.** Launched tokens have no mint function and no owner.
-- **We cannot hold your funds.** Trading is wallet-to-pool through a
-  router that custodies nothing.
+## What the platform cannot do
 
-Every contract is source-verified - on Basescan for Base, on Blockscout
-for Robinhood Chain. See the [contract reference](/integration/contracts).
+| Power | Exists? |
+|---|:-:|
+| Pause, change fees on, or withdraw liquidity from a live pool | No |
+| Mint tokens | No |
+| Hold user funds | No |
+
+Every contract is source-verified: [contract reference](/integration/contracts).
+
+## Next
+
+<CardGroup cols={2}>
+  <Card title="Trade or launch in 5 minutes" icon="bolt" href="/quickstart" />
+  <Card title="Launch a token" icon="wand-magic-sparkles" href="/launching" />
+  <Card title="Fees" icon="coins" href="/fees" />
+  <Card title="Build on the API" icon="code" href="/integration/api" />
+</CardGroup>

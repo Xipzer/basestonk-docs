@@ -1,40 +1,38 @@
 ---
 title: "Scanner flags, explained"
-sidebarTitle: "Scanner flags"
-description: "Why automated safety scanners flag advanced BaseStonk launches, what each flag actually means here, and how to report a false positive."
-icon: "shield-halved"
+sidebarTitle: "Token safety"
+description: "What automated scanners flag on BaseStonk launches, what fires it, and what is actually true."
+icon: "shield-check"
 ---
 
-Automated safety scanners raise the same handful of flags on advanced
-BaseStonk launches. Most are heuristics meeting an architecture they were
-not written for. If your launch - or a token you are researching - carries
-one of these flags, this page tells you what fires it and what is actually
-true, so you can decide for yourself rather than inheriting a verdict.
+Safety scanners raise the same few flags on advanced BaseStonk launches.
+Most are heuristics meeting an architecture they were not written for.
+
+| Flag | Verdict | Why it fires |
+|---|---|---|
+| **Creator can move funds** | **False** | an external call on every transfer - the dividend tracker notification |
+| **Unlocked liquidity / 0% locked** | **Model mismatch** | v4 has no LP token to lock or burn; the position lives in the PoolManager |
+| **High transfer fees** | **Usually true** | the token's tax plus the pool fee - the creator's published choice |
+| **Unverified contract** | **False** | every active contract is verified on its explorer |
+| **Unverified token** | **About the list, not the token** | absent from the scanner's own curated list |
 
 ## Creator can move funds
 
-**Not true of any BaseStonk launch.** The token is around 120 lines and
-has three privileged functions, every one restricted to the launcher
-contract rather than to the creator:
+The token has three privileged functions. Every one is restricted to the
+**launcher contract**, never the creator:
 
-| Function | What it can do |
-|---|---|
-| `setExempt(address,bool)` | toggle a max-wallet exemption |
-| `setRewardTracker(address)` | bind the tracker **once** - a second call reverts `TrackerAlreadySet`, so it can never be repointed |
-| `finishLaunch()` | flip a one-way launched flag |
+| Function | Does | Cannot |
+|---|---|---|
+| `setExempt(address,bool)` | toggle a max-wallet exemption | |
+| `setRewardTracker(address)` | bind the tracker **once** - a second call reverts `TrackerAlreadySet` | be repointed |
+| `finishLaunch()` | flip a one-way launched flag | |
 
-The V6 binding also asserts identity, not just presence: the tracker must
-answer `token()` with this token's address and `launcher()` with this
-launcher's, or the call reverts. The launcher cannot attach a tracker
-built for a different launch, so the address the transfer notification
-calls is provably the distributor deployed for this token - the creator
-cannot redirect holder rewards, and neither can the platform.
+No mint, no owner burn, no balance move; `_update` moves tokens only
+through the inherited ERC-20. V6 also checks identity at binding: the
+tracker must answer `token()` and `launcher()` correctly, so it is
+provably the distributor deployed for this token.
 
-None mints, burns, or moves a balance. There is no post-construction mint
-and no owner burn, and `_update` moves tokens only through the inherited
-ERC-20 implementation.
-
-What trips the heuristic is the rewards notification inside `_update`:
+What trips the heuristic:
 
 ```solidity
 (bool ok, ) = tracker.call{gas: 5_000_000}(
@@ -43,61 +41,35 @@ What trips the heuristic is the rewards notification inside `_update`:
 ok;
 ```
 
-An external call to a stored address on every transfer is a genuine
-malware signature, so flagging it is reasonable. Here the callee only reads
-balances and settles dividends, and the result is discarded - the token
-takes no action on what it returns.
+An external call to a stored address on every transfer is a real malware
+signature. Here the callee reads balances and settles dividends, and the
+result is discarded.
 
 <Note>
-  Simple launches have no tracker and no external call, which is why they
-  scan clean while advanced launches do not. The difference is the launch
-  mode, not the launcher generation.
+Simple launches have no tracker and no external call, so they scan clean. The difference is the mode, not the generation.
 </Note>
 
-## Unlocked liquidity, 0% locked or burned
+## Unlocked liquidity
 
-A model mismatch. Scanners look for burned or time-locked **LP tokens**,
-which is how Uniswap v2 and v3 represent a position. Uniswap v4 has no LP
-token at all - the position lives inside the PoolManager, keyed by the
-pool. There is nothing to burn, so the check reports zero.
-
-Launch liquidity is added by the launcher inside its own unlock callback
-with a strictly positive `liquidityDelta`, and the callback rejects any
-caller that is not the PoolManager. Why the pool cannot be pulled at all
-is [the sell floor](/sell-mechanics).
+Scanners look for burned or locked **LP tokens** - a v2/v3 concept. v4
+has none; the position is keyed inside the PoolManager. Launch liquidity
+is added in the launcher's own unlock callback with a strictly positive
+`liquidityDelta`, and the callback rejects any caller but the PoolManager. Why it cannot be pulled: [the sell floor](/trading#the-sell-floor).
 
 ## High transfer fees
 
-**Usually true.** The figure a scanner measures is the token's configured
-tax plus the pool fee, so a 4% launch measures at roughly 4.1%. It is a
-real cost and it is the creator's choice, published in the token's API
-record as `buyTaxBps` and `sellTaxBps`. Quote against those numbers rather
-than a default - and note that a scanner simulating a buy inside a V6
-launch's anti-sniper window measures the decaying toll, not the permanent
-rate. The toll is gone within 30 minutes of launch at most.
-
-## Unverified contract / unverified token
-
-Two different claims. Every active BaseStonk contract is verified and can
-be read at its explorer - Basescan on Base, Blockscout on Robinhood Chain. "Unverified token" usually means only that
-a token is absent from that platform's own curated list, which is a
-statement about the list.
+A 4% launch measures at about 4.1% - tax plus pool fee. Quote against the
+token's published `buyTaxBps` and `sellTaxBps`, not a default. A scanner
+simulating inside the anti-sniper window measures the decaying toll,
+which is gone within 30 minutes.
 
 <Warning>
-  A token that copies a BaseStonk name or ticker is not a BaseStonk launch.
-  Anything the platform deployed is traceable to a launcher on the
-  [contract reference](/integration/contracts) page - check the launcher
-  before trusting a name.
+A token that copies a BaseStonk name is not a BaseStonk launch. Anything the platform deployed traces to a launcher on the [contract reference](/integration/contracts). Check the launcher, not the name.
 </Warning>
 
-## Reporting a false positive
+## For scanner operators
 
-If you operate a scanner and want to classify these correctly, the two
-checks that separate a BaseStonk launch from the pattern it resembles are:
+Two checks separate a BaseStonk launch from the pattern it resembles:
 
-1. **Admin surface.** Confirm the only privileged functions are the three
-   above and that each reverts for callers other than the launcher.
-2. **Call target mutability.** Confirm `setRewardTracker` is one-way and,
-   on V6, identity-checked - the call target cannot be repointed after
-   launch, and could never have been pointed at a contract that does not
-   answer for this token.
+1. **Admin surface** - the only privileged functions are the three above, each reverting for any caller but the launcher.
+2. **Call-target mutability** - `setRewardTracker` is one-way and, on V6, identity-checked.

@@ -1,116 +1,72 @@
 ---
 title: "Stock pairs"
-description: "Price your launch in shares of NVIDIA, SpaceX or Coinbase."
+description: "Price your launch in shares of NVIDIA, Apple, SpaceX or Coinbase. The chart moves with the stock."
 icon: "chart-candlestick"
 ---
 
 Pair a launch with a tokenized equity and your token is quoted in shares
-of it. The chart moves with the stock, and the opening price is read from
-a live on-chain feed at the moment you sign.
+of it. The opening price is read from an on-chain feed when you sign -
+never typed, never trusted.
 
 ## Three kinds of stock token
 
-<CardGroup cols={3}>
-  <Card title="Coinbase B20 stocks" icon="building-columns">
-    NVDAc, COINc and friends - issued in the Coinbase app as chain-native
-    B20 tokens. Four are issued on-chain - NVDAc, GOOGLc, AAPLc, METAc -
-    and trade in live pools against USDC. The other nine have **no
-    on-chain market yet**: buyers must already hold the stock, and ETH
-    cannot route into them.
-  </Card>
-  <Card title="ST0x wrapped stocks" icon="arrows-rotate">
-    Eleven 1:1 backed wrapped equities and ETFs **with real DEX
-    liquidity** - anyone can buy a token paired with these using plain
-    ETH. All eleven are oracle-priced, by one of two kinds of oracle.
-    **Chainlink equity feeds:** wtCOIN, wtNVDA, wtMSTR, wtSPCX. **Routed
-    price feeds**, for the ETFs and foreign listings Chainlink does not
-    cover: wtSGOV, wtSKHY, wtSPYM, wtDRAM, wtQQQM, wtIAU, wtCEG.
-  </Card>
-  <Card title="Robinhood Stock Tokens" icon="building">
-    On **Robinhood Chain**, 194 equities and ETFs issued by Robinhood
-    itself - NVDA, AAPL, TSLA, SPY and the rest. Admitted by what they
-    are, not by a list: a genuine Robinhood-issued token with supply is
-    launchable. Priced by Chainlink where a feed exists and by the
-    token's own market otherwise, behind a depth gate that refuses any
-    pair too thin to price honestly. [Chains &rarr;](/chains)
-  </Card>
-</CardGroup>
+<Tabs>
+  <Tab title="Robinhood stocks">
+    **Robinhood Chain.** 194 equities and ETFs issued by Robinhood - NVDA, AAPL, TSLA, SPY and the rest. Admitted by what they are, not by a list; priced by Chainlink where a feed exists and by the token's own market otherwise, behind a depth gate. [Chains &rarr;](/chains#robinhood-stocks-as-pairs)
+  </Tab>
+  <Tab title="ST0x wrapped">
+    **Base.** Eleven 1:1 backed equities and ETFs **with real DEX liquidity** - anyone can buy a token paired with these using plain ETH.
 
-The create form tells you which kind you are choosing at the moment you
-pick it.
+    | Priced by | Tickers |
+    |---|---|
+    | Chainlink | wtCOIN, wtNVDA, wtMSTR, wtSPCX |
+    | Routed feed | wtSGOV, wtSKHY, wtSPYM, wtDRAM, wtQQQM, wtIAU, wtCEG |
+  </Tab>
+  <Tab title="Coinbase B20">
+    **Base.** NVDAc, COINc and friends, issued in the Coinbase app. Four trade in live pools against USDC - **NVDAc, GOOGLc, AAPLc, METAc**. The other nine have no on-chain market yet: buyers must already hold the stock, and ETH cannot route into them.
+  </Tab>
+</Tabs>
 
-## How a pair becomes launchable
+The form tells you which kind you are choosing.
 
-Every launchable pair carries an on-chain price source - a Chainlink feed
-where one exists, or a **routed price feed** where one does not: a small
-on-chain contract that walks a fixed route through real pools and derives
-the price from what those pools would actually pay.
+## How a pair is priced
 
-Either way, a feed whose answer is stale or dishonest refuses rather than
-guessing - and a launch priced off a refusing feed simply does not
-happen.
+| Source | Used when | Refuses when |
+|---|---|---|
+| **Chainlink feed** | one exists for the equity | stale beyond **96 hours** (equity markets close at weekends; 24h would fail every Saturday) |
+| **Routed feed** | no Chainlink feed (Base ETFs, foreign listings) | any hop of its fixed route is too thin - `HopTooThin` |
+| **Market depth** | Robinhood stocks without a feed | inflating the cap 10x would cost under \$1,000 |
 
-## Routed feeds, and why a pair can go quiet
+A feed that refuses stops the launch. That is the design: a launch priced
+off a pool a \$500 trade could move opens at a market cap that was never
+real.
 
-A routed feed does not just read a price - it measures **depth**, and it
-refuses to answer when the market behind it is too thin to be honest.
+## When a pair goes quiet
 
-Each hop of the route is measured by how much can actually be sold into
-its pool before the price moves materially. Every feed is deployed with a
-floor, and if any hop falls under it the feed reverts with `HopTooThin`
-rather than returning a number.
+| | |
+|---|---|
+| What you see | a **Too thin** badge on the pair; the launch button blocked, reason stated |
+| Is anything stuck? | No. Tokens already launched against the pair are unaffected - the feed only prices the *opening* of a new pool. |
+| When does it reopen? | By itself, the moment the market deepens. No action from anyone. |
+| If it has thinned for good | it is re-curated onto a deeper venue - never given a lower floor |
+
+## Stocks as dividends
+
+Equities can also be **dividend assets**: a launch pays its holders in
+tokenized stock through its [basket](/dividend-baskets).
 
 <Note>
-This is the design working, not a fault. The alternative is a launch
-priced off a pool that a \$500 trade could move - which is how a token
-opens at a market cap that was never real. A feed that refuses is a feed
-telling the truth about its own market.
+\$BSTONK as a pair is priced from its own pool times the USDC feed - a spot price a determined trader can move within a transaction. That can misprice the *opening* of a new launch, never a pool that exists.
 </Note>
 
-When it happens, the create form shows a **"Too thin"** badge on the
-pair and blocks the launch button, with the reason stated.
+<Accordion title="B20 mode (Base only)">
+When the pair is a Coinbase B20, the form offers to launch your token **as a B20** through Base's factory precompile: fixed 1B supply, and **both the mint role and the last admin renounced inside the launch transaction**. Nobody can mint, pause or freeze it - verify the renounce on Basescan.
 
-It is not permanent and nothing is stuck. **The pair reopens by itself
-the moment its market deepens** - no action from the creator or from
-BaseStonk. Tokens already launched against that pair are completely
-unaffected: the feed only prices the *opening* of a new pool, never one
-that exists.
+| B20 launches keep | B20 launches lose |
+|---|---|
+| Trade tax and fee splits | Max wallet |
+| Buyback & burn | Holder dividends |
+| The unpullable pool | |
 
-A pair whose market has thinned for good is re-curated onto a deeper
-venue rather than having its floor lowered - lowering the floor would
-keep the pair open by agreeing to price it badly.
-
-## Stocks as dividend assets
-
-Pairs are not the only place equities appear. Stocks and RWAs can also be
-**dividend assets**: a launch can pay its holders in tokenized equities
-through its payout basket. See [Wedges](/wedges).
-
-<Note>
-  \$BSTONK itself is priced by a purpose-built adapter reading the
-  BSTONK/USDC pool's own price times the USDC feed. It is a spot price: a
-  determined trader can move it within a transaction, which can misprice
-  the *opening* of a new launch that chose this pair - never a pool that
-  already exists.
-</Note>
-
-## Further reading
-
-<Accordion title="How a stock-paired chart is priced">
-
-A stock-paired launch reads its opening price through a Chainlink feed, so
-the same market cap in dollars implies a different token price depending on
-what the share is worth that day:
-
-$$
-p_0 = \frac{M}{S \cdot P_{\text{share}}}
-$$
-
-Equity feeds carry a **96-hour** staleness bound rather than the usual 24,
-because equity markets close over the weekend. A 24-hour bound would
-fail closed every Saturday and refuse every launch until Monday.
-
-If a feed cannot answer at all, the launch reverts. That is deliberate: a
-launch priced off a dead oracle is worse than a launch that did not happen.
-
+The standard has no holding caps and calls no external trackers. The form states both halves before you sign.
 </Accordion>

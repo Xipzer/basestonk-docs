@@ -1,57 +1,64 @@
 ---
 title: "Trading"
-description: "Wallet to pool, with routing that meets you where your funds are."
+description: "Wallet to pool through a router that custodies nothing. What you pay, and the one thing that can refuse a sell."
 icon: "arrow-right-arrow-left"
 ---
 
-Trading on BaseStonk is wallet-to-pool through a router that custodies
-nothing. There is no deposit and no account. It works the same way on
-Base and on Robinhood Chain; the header's chain switch decides which
-tokens you see and which network the wallet signs on.
+No deposit, no account. The header's chain switch decides which tokens you
+see and which network the wallet signs on.
 
-## Pay with whatever you hold
+## Pay with what you hold
 
-On crypto-paired tokens the trade panel accepts **ETH, WETH or USDC** on
-Base, and **ETH, WETH or USDG** on Robinhood Chain, directly: it routes
-your asset into the token's pair through an aggregator, then completes the
-pool swap - one flow, one confirmation.
+| Chain | Pay in |
+|---|---|
+| Base | ETH, WETH, USDC |
+| Robinhood Chain | ETH, WETH, USDG |
 
-Most stock-paired tokens route from ETH the same way, on either chain.
-The exception is the handful of Coinbase B20 stocks on Base with no
-on-chain market yet - for those you must hold the stock already, and the
-panel says so rather than failing. See [stock pairs](/stock-pairs).
+The panel routes your asset into the token's pair through an aggregator,
+then completes the pool swap - one flow, one confirmation. Most stock
+pairs route from ETH too; the exception is the Coinbase B20 stocks on Base
+with no on-chain market, where you must hold the stock already and the
+panel says so.
+
+## What you pay
+
+| | |
+|---|---|
+| The token's tax | buy and sell rates set at launch, taken inside the swap. Shown on the token page. |
+| Platform charges on top | none |
+| Price impact | the pool's own curve - split large orders rather than raising slippage |
+
+## The sell floor
+
+Every pool opens as single-sided liquidity above the launch price. Two
+things follow, and both are guarantees:
+
+| | |
+|---|---|
+| Nobody can pull the liquidity | the launcher holds nothing after launch; no admin exists over the pool |
+| The launch price is a floor | the pool cannot pay out below the price it opened at - below it there is nothing on the other side |
+
+### The one consequence
+
+While a token trades near its launch price, the pool has not collected
+much of the pair yet. A very large sell can ask for more than the pool
+holds - and is **refused whole** rather than partially filled.
+
+<Note>
+Not a honeypot, nothing is locked. Selling in smaller pieces always works, and the interface tells you when a sell is too big. A token that has traded up sells normally.
+</Note>
 
 ## Charts and data
 
-Every token page carries live candles, trades, holders and the token's
-tax mechanics. The figures come from BaseStonk's own indexer reading the
-chain - the same numbers the [public API](/integration/api) serves.
+Live candles, trades, holders and tax mechanics on every token page, from
+BaseStonk's own indexer - the same numbers the [API](/integration/api)
+serves.
 
-## Fees you pay when trading
-
-The token's launch-time tax (see [Fees](/fees)) is taken inside the swap -
-buy and sell rates independently, on V6 launches and on every Robinhood
-Chain launch. The interface shows the token's rates on its page - there
-are no other platform charges on top.
-
-## Further reading
-
-<Accordion title="What price impact costs you, and why size matters more than slippage settings">
-
-For a constant-product pool, buying $x$ of the pair moves you along the
-curve and the output is:
-
-$$
-\Delta_{\text{out}} = \frac{y \cdot x}{X + x}
-$$
-
-so your effective price worsens with $x$ **relative to the pool**, not in
-absolute dollars. A $500 trade is small in a deep pool and enormous in a
-thin one.
-
-The practical rule: a 2% move is the useful yardstick. If your trade size
-is near what it takes to move the pool 2%, expect to feel it - and split
-the order rather than raising slippage tolerance, which only widens what
-you will accept, not what you will pay.
-
+<AccordionGroup>
+<Accordion title="Price impact, and why size matters more than slippage">
+$\Delta_{\text{out}} = \dfrac{y \cdot x}{X + x}$ - your effective price worsens with size *relative to the pool*. A \$500 trade is small in a deep pool and enormous in a thin one. If your size is near what moves the pool 2%, split the order; raising slippage widens what you accept, not what you pay.
 </Accordion>
+<Accordion title="Why the floor holds">
+A concentrated position releases $\Delta y = L(\sqrt{P_a} - \sqrt{P_b})$ for a move. That is what *depth* means throughout this venue: not a balance, but what comes out for a given move. It is why routes are ranked by what a move releases, not by pool size.
+</Accordion>
+</AccordionGroup>

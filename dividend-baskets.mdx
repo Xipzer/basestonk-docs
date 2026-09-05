@@ -1,187 +1,86 @@
 ---
 title: "Dividend baskets"
+sidebarTitle: "Dividends"
+description: "Holders are paid a share of every trade, automatically, in up to ten assets the creator picked."
 icon: "basket-shopping"
-description: "Pick up to ten assets at launch, and your holders are paid in them - tokenized stocks, majors, ecosystem tokens - converted on-chain, automatically."
 ---
 
-A BaseStonk launch can pay its holders in **up to ten assets of the
-creator's choosing** - on Base, NVIDIA, gold ETFs, cbBTC, \$BSTONK, agent
-tokens; on Robinhood Chain, any of the 194 Robinhood stocks, USDG or WETH -
-any mix at once. Most launchpads pay rewards in whatever the token trades
-against, or not at all.
-
-The mechanism is the same contract family on both chains. What differs is
-the menu: each chain's basket draws from the pairs that chain admits.
+A launch pays its holders a percentage of **every trade's volume**, in up
+to ten assets of the creator's choosing, converted on-chain as people
+trade. Nothing to claim. Nothing to trust.
 
 ## How it works
 
-1. **The creator picks the basket at launch** - up to ten assets with
-   weights, from a menu of several hundred on Base or the admitted
-   Robinhood pairs on Robinhood Chain.
-2. **A share of every trade flows into the basket.**
-3. **The contracts buy the assets on-chain** - through real markets,
-   with a price floor so holders can never be quietly shortchanged. No
-   bot, no middleman, no fee on conversions.
-4. **Everyone gets their share automatically.** There is nothing to
-   claim - payouts arrive as people trade.
+<Steps>
+  <Step title="The creator picks the basket at launch">
+    Up to ten assets with weights, from the pairs the chain admits.
+  </Step>
+  <Step title="A share of every trade flows in">
+    The rewards percentage, taken inside the swap.
+  </Step>
+  <Step title="The contracts buy the assets">
+    Through real markets, with a floor so holders are never quietly shortchanged. No bot, no middleman, no conversion fee.
+  </Step>
+  <Step title="Every holder gets their share">
+    Automatically, as people trade. Claiming is optional, never required.
+  </Step>
+</Steps>
 
-## The arithmetic - volume, not fee-share
+<Tabs>
+  <Tab title="Base">
+    Menu: tokenized stocks, ETFs, cbBTC, \$BSTONK, agent and ecosystem tokens - several hundred.
+  </Tab>
+  <Tab title="Robinhood Chain">
+    Menu: any of the 194 Robinhood stocks, USDG, WETH. With no basket, dividends are paid in the pair.
+  </Tab>
+</Tabs>
 
-The single most misread fact about BaseStonk dividends: **they are a
-percentage of trading volume, not a cut of a pool's LP fee.**
+## What it adds up to
 
-A token routing 3% to holders sends **\$300** of a \$10,000 buy straight
-to its holders, on that one trade. Volume compounds daily; market cap
-does not have to.
+At a 3% holder share:
 
-What that adds up to at a 3% holder share:
+| Daily volume | Paid to holders / year | as % of a \$2M cap | \$5M | \$10M |
+|---|---|---|---|---|
+| \$200k | ~\$2.2M | 110% | 44% | 22% |
+| \$500k | ~\$5.5M | 275% | 110% | 55% |
+| \$1M | ~\$11M | 550% | 220% | 110% |
 
-| Daily volume | Annual volume | Stock delivered to holders / year | At \$2M cap | At \$5M cap | At \$10M cap |
-|---|---|---|---|---|---|
-| \$200k | \$73M | ~\$2.2M | 110% | 44% | 22% |
-| \$500k | \$182M | ~\$5.5M | 275% | 110% | 55% |
-| \$1M | \$365M | ~\$11M | 550% | 220% | 110% |
-
-That \$2.2M is not more of the meme token - it is **real tokenized stock**,
-converted on-chain and pushed to holders' wallets as people trade. That is
-the entire pitch.
+Paid in **the assets themselves** - real tokenized stock, not more of the token.
 
 <Note>
-This is arithmetic, not a promise. Volume is the input the model cannot
-guarantee: a token that stops trading stops paying. What the contracts do
-guarantee is the percentage - the hook takes it inside the swap, the split
-is immutable after launch, and the conversion to basket assets is
-floor-guarded on-chain.
+Arithmetic, not a promise. Volume is the input nobody can guarantee. The percentage, the immutable split and the on-chain floor are what the contracts guarantee.
 </Note>
 
 ## The controller seat
 
-The basket's **composition** sits behind a controller seat. The creator
-holds it by default and can re-weight or swap the basket's assets on a
-live token, hand the seat to someone else, or renounce it.
+The basket's **composition** sits behind a seat. The **percentage of volume** does not - that is fixed at launch, seat or no seat.
 
-What the seat can never touch is the **percentage of volume** flowing to
-holders: that is fixed at launch and enforced by the hook, seat or no
-seat.
+| Seat holder can | Seat holder cannot |
+|---|---|
+| Re-weight or swap the basket's assets | Change the rewards percentage |
+| Hand the seat to another address | Touch dividends already paid |
+| Renounce it - one way, no undo, not even by the platform | |
 
-Two one-way doors close the seat:
+| Closing the seat | Base | Robinhood Chain |
+|---|---|---|
+| At launch | tick *renounce basket control* | not on the form |
+| Later | `renounceBasket()` | hand the seat to a burn address |
 
-- **Renounce at launch** - tick the box and the basket the launch
-  declared is the basket forever.
-- **Renounce later** - the same one-way door, any time. There is no
-  undo, for anyone - including the platform.
-
-Whether the seat is live or renounced is public on-chain state, so anyone
-can check whether a token's payout mix is a policy or a constant.
-
-Two things worth knowing before rebuilding a basket:
-
-- **Nothing in flight is lost.** Value sitting in a replaced slot still
-  reaches holders on the same sharing maths. A rebuild changes where
-  future dividends go, never where past ones went.
-- **A careless pick degrades gracefully.** A slot whose asset cannot be
-  priced simply pays the pair currency instead - nothing gets trapped.
-
-Driving the seat from code - the calls, what they enforce, and the
-readable state - is on the
-[on-chain page](/integration/onchain#the-basket-controller-seat).
+Whether a seat is live is public on-chain state. Rebuilding a basket
+changes where *future* dividends go; value in flight still reaches
+holders on the same maths.
 
 ## The honest edges
 
-- The basket is the creator's **preference, not a guarantee of which
-  asset arrives**. If an asset can't be bought at a fair price right now,
-  that share is paid in the pair currency instead - visibly, never lost.
-- A conversion that would land below fair value is refused and retried
-  smaller, rather than accepted badly.
-- An empty basket just means classic behaviour - dividends in the pair.
-- If the controller seat is still live, the payout mix can change. Anyone
-  can check on-chain whether the seat has been renounced (Base) or handed
-  to a burn address (Robinhood Chain, which has no renounce-at-launch
-  field - the creator holds the seat from launch).
+| If | Then |
+|---|---|
+| An asset cannot be bought at a fair price right now | that share is paid in the pair, visibly, never lost |
+| A conversion would land below fair value | it is refused and retried smaller |
+| The basket is empty | dividends in the pair |
+| The seat is still live | the mix can change - check on-chain |
 
 ## Where to see it
 
-Any token whose card carries the **BASKET REWARDS** tag pays a basket. Its token page shows the designated assets and weights, each holder's running totals per asset, and a breakdown of what has been received and what is waiting.
-
-<Note>
-On Base, the platform's own token participates too: launches can route a share of their rewards into the \$BSTONK basket vault - a portfolio paid out to \$BSTONK holders as the assets themselves. This wedge is Base-only; \$BSTONK does not exist on Robinhood Chain. [Why &rarr;](/chains#where-the-platforms-cut-goes)
-</Note>
-
-## Further reading
-
-<AccordionGroup>
-
-<Accordion title="How a holder's share is computed">
-
-Rewards accrue against an accumulator rather than being pushed to every
-wallet, because pushing to thousands of holders on every trade would cost
-more gas than it distributes.
-
-The contract tracks a running total per share:
-
-$$
-\text{acc} \mathrel{+}= \frac{\Delta_{\text{in}}}{S_{\text{total}}}
-$$
-
-and a holder's claimable balance is the distance the accumulator has moved
-since they were last settled:
-
-$$
-\text{owed}(h) = s_h \cdot \big(\text{acc} - \text{acc}_h\big)
-$$
-
-where $s_h$ is the holder's shares and $\text{acc}_h$ is their checkpoint.
-Both update whenever they trade or claim, so the arithmetic is $O(1)$ per
-holder no matter how many holders exist.
-
-</Accordion>
-
-<Accordion title="What the conversion is allowed to accept">
-
-Every automatic conversion has a floor, and the floor - not a slippage
-setting - is what bounds it:
-
-$$
-P = \min\!\big(P_{\text{gate}},\ P_{\text{market}}\big)
-$$
-
-The floor is that price less the route's real venue fees and a small
-slippage allowance that scales with the route and is capped overall.
-
-Taking the *lower* of the two prices matters more than it looks. Checking
-that two prices agree only requires an attacker to move both; taking the
-minimum requires them to move the one that is already lowest, which is the
-expensive direction.
-
-</Accordion>
-
-<Accordion title="Why a refusal is the design working">
-
-A conversion whose size cannot clear the floor is refused, and the
-contract retries at smaller sizes across later turns. So a slot with a
-thin market converts in small pieces rather than accepting a bad price
-once.
-
-If a route cannot clear the floor at any size, the slot **pays in the pair
-token instead**. Value always reaches holders; only the currency changes.
-
-</Accordion>
-
-<Accordion title="Time-weighted allocation, for basket vault rounds">
-
-Vault rounds weight a holder by balance *and* duration, not by a snapshot:
-
-$$
-w_h = \sum_{t \in [t_0,\,t_1]} b_h(t)\,\Delta t
-\qquad
-\text{share}_h = \frac{w_h}{\sum_j w_j}
-$$
-
-A single-block snapshot is trivially sniped - buy immediately before it,
-sell immediately after - and the block is announced on chain when the round
-commits. Integrating over the window removes the edge entirely: to earn a
-full share you have to actually hold for the window.
-
-</Accordion>
-
-</AccordionGroup>
+Tokens tagged **BASKET REWARDS** pay a basket. The token page shows the
+assets and weights, each holder's running totals, and what is waiting.
+[Driving the seat from code &rarr;](/integration/onchain#the-basket-controller-seat)

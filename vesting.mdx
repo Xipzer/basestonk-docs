@@ -1,81 +1,94 @@
 ---
-title: "Dev-buy vesting"
-sidebarTitle: "Vesting"
-description: "Lock the dev buy in a vault whose schedule is published on-chain in the launch transaction itself."
-icon: "hourglass-half"
+title: "Vesting and takeover"
+sidebarTitle: "Vesting & takeover"
+description: "Locking the dev buy, who controls a token's page, and what happens when a founder disappears."
+icon: "lock"
 ---
 
-A launch can route the creator's dev buy into a **vesting vault** instead
-of their wallet: a per-launch contract that releases the tokens linearly,
-with an optional cliff before anything unlocks at all. Pick 7, 30, 90 or
-365 days from the presets, or type any duration - **7 days is the floor
-and there is no ceiling.**
+Same contracts on Base and Robinhood Chain.
 
-Dev-buy vesting is identical on Base and Robinhood Chain - the same vault contract, the same schedule rules, the same `VaultCreated` event.
+## Dev-buy vesting
 
-<Note>
-**Vesting is on the Simple form too.** Both modes carry the same vest
-fields and the chain honours them identically.
-</Note>
+The dev buy can go into a **vesting vault** instead of the creator's
+wallet. The schedule is public on-chain from the launch transaction, so
+every buyer can read what is locked and until when.
 
-The point is not the lock - it is the **disclosure**. The schedule is
-announced on-chain in the launch transaction itself, so it is public from
-the block the token exists: a buyer reading the token page sees exactly
-what the creator locked and until when, before deciding anything.
-
-## The honest trade
+| | |
+|---|---|
+| Duration | 7, 30, 90 or 365 days from the presets, or any duration. **7 days minimum, no maximum.** |
+| Cliff | optional - nothing unlocks before it |
+| Release | linear after the cliff; anyone can trigger what has vested |
+| Cap | **none** - the 10% dev-buy cap applies only to the unvested path |
+| Available in | Simple and Advanced |
 
 <Warning>
-  A vested dev buy is **uncapped by design**. The 10% dev-buy cap applies
-  only to the unvested path - tokens paid straight to the creator's
-  wallet. Choose a lock and the whole buy, whatever its size, routes into
-  the vault. The cap protected buyers from an undisclosed large position;
-  the vault replaces that protection with a disclosed one: the size and
-  the schedule are on-chain in the launch transaction, and the schedule
-  can never be shortened.
+A vested dev buy is uncapped **by design**. The 10% cap protected buyers from an undisclosed large position; the vault replaces it with a disclosed one. The launcher refuses vesting without a dev buy (`VestRequiresDevBuy`).
 </Warning>
 
-A vested launch is not automatically safer than a capped one - it is
-differently safe. The creator may hold more than 10%, but every token of
-it is time-locked on a schedule the chain announced at birth, and the
-launcher refuses a vesting request without a dev buy to vest
-(`VestRequiresDevBuy`).
+### The vault's rules
 
-## How the vault behaves
+| The beneficiary can | The beneficiary cannot |
+|---|---|
+| Extend a schedule | Shorten one - reverts |
+| Lock more tokens under new schedules | Take any out early |
+| Transfer the vault to another address | |
+| Claim the dividends the locked tokens earn | |
 
-One vault per launch, created by the launcher. The contract enforces:
+### Dividends while locked
 
-- **Linear release.** Nothing before the cliff; after it, tokens vest
-  continuously, and anyone can trigger the release of what has vested.
-- **Extend, never shorten.** The beneficiary can lengthen a schedule;
-  any change that would shorten one reverts.
-- **Add, never subtract.** The beneficiary can lock more tokens under
-  new schedules. Each addition is its own on-chain event.
-- **The seat can move.** The vault can be transferred to another
-  address - a project outliving its founding wallet.
+Locked tokens still earn holder rewards. Two one-way doors end that
+stream:
 
-## Dividends while locked
+| | Effect |
+|---|---|
+| **Renounce** | the locked supply's dividend claim goes to the other holders, forever. No undo, not even by the platform. |
+| **Takeover** (below) | the stream ends the moment the seat moves. The tokens stay the founder's and keep vesting. |
 
-Locked tokens are still held tokens, so a vault on a dividend-paying
-launch **earns holder rewards** like any other holder. The beneficiary
-can claim what the vault has earned, per asset - the locked tokens
-themselves never move early.
+Everything is public state on the vault: each schedule's total, released,
+start, cliff and duration; what a release would send now; whether the
+stream is gone. The factory's `vaultOf(token)` is `address(0)` when the
+dev buy was not vested.
 
-Two ways that stream ends, both one-way:
+## Who controls the page
 
-- **Renouncing it** - the beneficiary gives the locked supply's dividend
-  claim to the other holders, forever. It cannot be restored, not even by
-  the platform.
-- **Takeover.** If the community
-  [takes over the token](/cto), a departed founder's locked supply stops
-  earning the moment the seat moves. The tokens themselves remain the
-  beneficiary's and keep vesting on their schedule; only the dividend
-  stream ends.
+**LaunchControl** is the registry of who controls each token's page -
+artwork, description, links. The creator holds the seat by default.
 
-## Reading a vault
+| The seat controls | The seat does not control |
+|---|---|
+| Artwork, description, links | The pool or its liquidity |
+| | Tax rates, split, wedges |
+| | Supply, anyone's holdings |
 
-Everything above is public state on the vault contract: every schedule's
-total, released amount, start, cliff and duration; what a release would
-send right now; whether the dividend stream is gone. The factory's
-`vaultOf(token)` answers whether a token has a vault at all -
-`address(0)` means the dev buy was not vested.
+### Handing over
+
+The controller can transfer the seat directly on-chain, or sign a
+handover that anyone submits for them - it names token, recipient and
+expiry, fits one transfer, and cannot be replayed.
+
+## Community takeover
+
+When a founder is gone, the platform can *propose* a new controller. It
+cannot execute one.
+
+<Steps>
+  <Step title="Propose">
+    The platform names the new controller. A **7-day clock** starts, on-chain.
+  </Step>
+  <Step title="Veto window">
+    At any point in the 7 days the current controller can cancel. A founder who is present cannot be removed; this only completes against silence.
+  </Step>
+  <Step title="Execute">
+    After 7 days, **anyone** can complete it. The seat moves, and the founder's vault stops earning dividends in the same transaction.
+  </Step>
+</Steps>
+
+| A takeover changes | A takeover cannot change |
+|---|---|
+| Page control | Tax rates, split, wedges |
+| Founder's vault dividend stream - ends | Founder's vested tokens - still theirs, still on schedule |
+| | The pool, holders' balances or earnings |
+
+<Note>
+The delay plus the veto is the design. A takeover the platform could execute instantly would make the platform the real controller of every token.
+</Note>

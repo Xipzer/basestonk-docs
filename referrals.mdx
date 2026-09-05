@@ -1,142 +1,62 @@
 ---
 title: "Referrals"
-description: "Share a link, earn on every trade your network makes - five levels deep, paid per trade, in real assets."
-icon: "user-plus"
+description: "Paid on every trade your network ever makes, five levels deep, in USDC, automatically."
+icon: "users"
 ---
 
-BaseStonk pays you for the traders you bring - not once, at signup, but
-**on every trade they ever make**, and on the trades of the people they
-refer in turn, down five levels.
+Bring traders and you are paid a share of the platform's cut on **every
+trade they ever make** - and on the trades of everyone they bring, down
+five levels.
 
 <Note>
-Referrals are a **Base** programme: a link is created by holding USDC on
-Base, and rewards are paid there from Base's platform fees. Trades on
-Robinhood Chain do not accrue referral rewards.
+**Base only.** A link is created by holding USDC on Base and rewards are paid there from Base's fees. Robinhood Chain trades do not accrue referral rewards.
 </Note>
 
 ## How it works
 
-- **One link.** Grab it from your
-  [portfolio](https://basestonk.io/portfolio). Anyone who arrives through
-  it is yours - and so, five levels down, is everyone their network
-  brings.
-- **Paid per trade, from the real fee** - the platform's on-chain
-  reported cut of every swap, not an estimate.
-- **It never expires.** A trader you brought two years ago still pays you
-  on today's volume.
-- **Worth something on both sides** - applying a code takes a slice off
-  the platform's cut for the person who uses it.
-- **Paid without asking.** Nothing to claim, no withdraw button: earnings
-  settle automatically as a **single USDC transfer** to your wallet on a
-  rolling schedule. Balances under \$0.50 roll forward until they are
-  worth sending. Your running accrual is always in your portfolio.
+| | |
+|---|---|
+| Get a link | your [portfolio](https://basestonk.io/portfolio) |
+| Who counts | anyone who arrives through it, and their network, five levels down |
+| Paid from | the platform's real on-chain cut of each swap - never the creator's or holders' |
+| Expires | never - a trader from two years ago pays you on today's volume |
+| For them | applying a code takes a slice off the platform's cut on their trades |
+| Payout | a single USDC transfer to your wallet on a rolling schedule; under \$0.50 rolls forward |
+| Claiming | none. Your running accrual is always in your portfolio. |
 
-## The size of what you are sharing in
+## What you are sharing in
 
-The platform's cut is **0.5% to 1% of every dollar traded** (see
-[Fees](/fees)) - and your earnings are a share of that cut, across your
-whole network's volume. The pool your network generates:
+The platform's cut is 0.5% - 1% of every dollar traded ([Fees](/fees)).
 
-| Your network's daily volume | Platform fees it generates per year |
+| Your network's daily volume | Platform fees per year |
 |---|---|
 | \$100k | \$182k - \$365k |
 | \$500k | \$912k - \$1.8M |
 | \$1M | \$1.8M - \$3.65M |
 | \$5M | \$9.1M - \$18.2M |
 
-Your share of that pool is attached to your code and shown in your
-portfolio - one number, for your wallet, on your earnings.
+Your share is attached to your code and shown in your portfolio. The
+internal rate structure is deliberately not published; your own earnings
+always are.
 
-## Five levels, honestly counted
+## Five levels, honestly
 
-Most multi-level schemes decay to nothing by the third hop, because each
-level takes a fraction *of the fraction below it*. This one does not:
-**every level's share is a share of the same trade fee.** Depth five is a
-smaller share than depth one - but of the whole fee, so a deep network
-still pays.
-
-The consequence: recruiting recruiters is worth more than recruiting
-traders. A branch earns you one person's volume; a tree earns you all of
-it.
+Most multi-level schemes decay to nothing by the third hop because each
+level takes a fraction *of the fraction below it*. Here **every level is
+a share of the same trade fee** - depth five is a smaller share, but of
+the whole fee. Recruiting recruiters beats recruiting traders.
 
 ## Bring an audience
 
-The standard programme is self-serve and open to everyone. If you bring
-real distribution - an audience, a community, genuine mindshare - reach
-out on [X](https://x.com/BaseStonk): larger arrangements can be
-organised, including a vanity code that reads as your name instead of six
-random characters.
-
-<Note>
-  Your earnings are your business - the interface shows you your own
-  numbers and nobody else's, and the programme's internal rate structure
-  is deliberately not published. What you earn is always visible to you,
-  in your portfolio.
-</Note>
-
-## Further reading
+Self-serve is open to everyone. Real distribution - an audience, a
+community - can be arranged on [X](https://x.com/BaseStonk), including a
+vanity code that reads as your name.
 
 <AccordionGroup>
-
-<Accordion title="Where a referral share comes from">
-
-A referral is paid out of the platform's own cut, never out of the
-creator's or holders':
-
-$$
-\text{referrer} = \text{platform} \times \rho
-$$
-
-so a referred trade pays the creator, holders and the pool exactly what an
-unreferred one does. Nothing about the token's economics changes because
-somebody arrived through a link.
-
+<Accordion title="The formula">
+$E = \sum_{d=1}^{5} \rho_d \cdot \Phi_d$, where $\Phi_d$ is the platform fee of every trade at depth $d$. Note what it is *not*: $\sum_d \rho^{d} \Phi_d$. No compounding of fractions down the chain.
 </Accordion>
-
-<Accordion title="What a network earns, as a formula">
-
-Your flow is a sum over depths, where each depth's rate applies to the
-**whole platform fee** of every trade at that distance:
-
-$$
-E = \sum_{d=1}^{5} \rho_d \cdot \Phi_d
-\qquad
-\Phi_d = \sum_{i \,\in\, \mathcal{N}_d} \min\!\left(\tfrac{\tau_i}{2},\ 100\ \text{bps}\right) \cdot V_i
-$$
-
-where $\mathcal{N}_d$ is your network at depth $d$, and $V_i$, $\tau_i$
-are each trade's volume and tax. The rates $\rho_1 > \rho_2 > \dots >
-\rho_5$ fall with distance - but note what the formula is *not*:
-
-$$
-E \ne \sum_{d} \rho^{\,d} \cdot \Phi_d
-$$
-
-There is no compounding of fractions down the chain. A share of the same
-fee at every level is what keeps depth five worth having.
-
-</Accordion>
-
 <Accordion title="Why a tree outpays a branch">
-
-If each person you bring goes on to bring $k$ more, your network at depth
-$d$ has $k^{d-1}$ times the people of your first level, and the flow sums
-geometrically:
-
-$$
-E \;\propto\; \sum_{d=1}^{5} \rho_d \, k^{\,d-1} \bar{V}
-$$
-
-where $\bar{V}$ is average volume per member. For any $k > 1$ the deep
-terms dominate despite their smaller rates - five people who each build
-are worth more than fifty who only trade.
-
-The same summation is a variance argument: one trader's volume is one
-random variable, a five-level network's is a sum over many. Individual
-quiet weeks wash out, and what remains is the network's aggregate
-activity - the same reason the [platform basket](/bstonk) is steadier
-than any single token's stream.
-
+If each member brings $k$ more, depth $d$ holds $k^{d-1}$ times your first level and $E \propto \sum_d \rho_d k^{d-1} \bar V$. For any $k > 1$ the deep terms dominate. Five people who build are worth more than fifty who only trade.
 </Accordion>
-
 </AccordionGroup>

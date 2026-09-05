@@ -4,16 +4,16 @@ description: "Every address on both chains, source-verified."
 icon: "file-contract"
 ---
 
-BaseStonk is deployed on **Base mainnet (chain id 8453)** and on
-**Robinhood Chain (chain id 4663)**. Every contract on both is
-source-verified - each link opens directly at the verified code. Base
-first; [Robinhood Chain is below](#robinhood-chain-4663).
+Every address on both chains, each link opening at the verified code.
+
+| Chain | Id | Explorer | Current launcher |
+|---|---|---|---|
+| Base | 8453 | Basescan | [AdvancedLauncherV6](#base-current-v6) |
+| Robinhood Chain | 4663 | Blockscout | [RhLauncher](#robinhood-chain-4663) |
 
 ## Base - current (V6)
 
-Addresses here are read from the live deployment and every one is
-source-verified on Basescan. The V6 stack deployed at blocks
-50,637,223-50,637,288.
+Deployed at blocks 50,637,223 - 50,637,288.
 
 | Contract | Address |
 |---|---|
@@ -31,8 +31,7 @@ source-verified on Basescan. The V6 stack deployed at blocks
 
 ### The B20 rail
 
-[B20 mode](/b20-mode) launches through its own launcher and hook on the
-same generation, not through the ones above.
+[B20 mode](/stock-pairs) launches through its own launcher and hook.
 
 | Contract | Address |
 |---|---|
@@ -41,9 +40,7 @@ same generation, not through the ones above.
 
 ### Linked libraries
 
-The launcher and hook delegate to six libraries deployed alongside them.
-They hold no state and take no constructor arguments, but a builder
-reproducing a launch's bytecode needs their addresses.
+Stateless, no constructor arguments; needed to reproduce a launch's bytecode.
 
 | Library | Address |
 |---|---|
@@ -54,22 +51,19 @@ reproducing a launch's bytecode needs their addresses.
 | LaunchOpening | [`0xf23570f7885a3f8dea2efcf14ec0e93cd129715b`](https://basescan.org/address/0xf23570f7885a3f8dea2efcf14ec0e93cd129715b#code) |
 | BasketControl | [`0xb65a995e5d1cd7d0d3412c13c57c77c473cde333`](https://basescan.org/address/0xb65a995e5d1cd7d0d3412c13c57c77c473cde333#code) |
 
-The launcher, hook and factories are bound to each other immutably in both
-directions - the hook only configures pools for this launcher, the rewards
-and vesting factories only answer this launcher's calls - so any one of
-these addresses proves the rest. The RoutedQuoteGate, SwapRouter and
-PairOracleRegistry carry over from V5 unchanged.
+Launcher, hook and factories are bound immutably in both directions, so
+any one address proves the rest. RoutedQuoteGate, SwapRouter and
+PairOracleRegistry carry over from V5.
 
-What V6 added: separate buy and sell tax rates, the
-[dev-buy vesting vault](/vesting), the anti-sniper toll, a payout basket
-controller seat with renounce-at-launch, and
-[community takeover through LaunchControl](/cto).
+V6 added: split buy/sell tax, [dev-buy vesting](/vesting), the anti-sniper
+toll, the basket controller seat with renounce-at-launch, and
+[takeover through LaunchControl](/vesting#community-takeover).
 
 ## Retired generations
 
-Retired launchers keep working on chain - their pools and tokens trade
-unchanged - but the platform no longer launches through them, and
-launches made through them after retirement are not listed.
+Retired launchers keep working on chain; the platform no longer launches
+through them, and launches made through them after retirement are not
+listed.
 
 | Contract | Status | Address |
 |---|---|---|
@@ -85,11 +79,7 @@ launches made through them after retirement are not listed.
 | Fee hook (B20 v1) | retired at block 50,640,490 | [`0x805975d27518e3E23c4838802d9DdA7302DcA044`](https://basescan.org/address/0x805975d27518e3E23c4838802d9DdA7302DcA044#code) |
 
 <Note>
-The V4 and V5 rows are the last deployment of each generation. Both
-generations went through revisions before retirement, so a pool launched
-mid-generation may name an address not listed here - read the pool's hook
-rather than assuming, and any launcher proves its own hook through
-`hook()`.
+V4 and V5 rows are the last deployment of each; earlier revisions exist. Read a pool's hook rather than assuming - any launcher answers `hook()`.
 </Note>
 
 ## Tokens
@@ -107,11 +97,7 @@ rather than assuming, and any launcher proves its own hook through
 
 ## Robinhood Chain (4663)
 
-Deployed 2026-09-04. Every address is source-verified on
-[Blockscout](https://robinhoodchain.blockscout.com) - each link opens at
-the verified code. The launcher is a different contract from Base's V6
-(`RhLauncher`), built for the chain's pricing model; the fee hook is the
-same `AdvancedFeeHookV6` with the same permissions.
+Deployed 2026-09-04. `RhLauncher` is a different contract from Base's V6, built for the chain's pricing model; the hook is the same `AdvancedFeeHookV6`.
 
 | Contract | Address |
 |---|---|
@@ -124,11 +110,7 @@ same `AdvancedFeeHookV6` with the same permissions.
 | SwapRouter | [`0x6A10c4117D37FaaDf429c36522A756Ee9435874f`](https://robinhoodchain.blockscout.com/address/0x6A10c4117D37FaaDf429c36522A756Ee9435874f?tab=contract) |
 | RhFeeVault | [`0x618D78262a8dDE229A088C41C0bFf440aC79D267`](https://robinhoodchain.blockscout.com/address/0x618D78262a8dDE229A088C41C0bFf440aC79D267?tab=contract) |
 
-`RhPairRegistry` is what admits and prices a pair - the
-[depth gate](/chains#robinhood-stock-tokens-as-pairs) lives there.
-`RhFeeVault` is where the platform's cut is held as USDG. There is no
-basket vault, no gate lens and no routed quote gate on this chain, because
-the things they serve on Base do not exist here.
+`RhPairRegistry` admits and prices pairs - [the gate](/chains#robinhood-stocks-as-pairs). `RhFeeVault` holds the platform's cut as USDG. No basket vault, gate lens or routed quote gate: what they serve on Base does not exist here.
 
 ### Linked libraries
 
@@ -146,17 +128,8 @@ the things they serve on Base do not exist here.
 | Uniswap v4 PoolManager | `0x8366a39CC670B4001A1121B8F6A443A643e40951` |
 | Uniswap v3 factory | `0x1f7d7550B1b028f7571E69A784071F0205FD2EfA` |
 
-Robinhood Stock Tokens are proxies sharing one implementation; the
-registry admits a pair by that proxy's code hash, so the 194 addresses
-are not listed here - ask `RhPairRegistry.isAdmitted(address)`.
-
-Launched tokens and their dividend distributors are `AdvancedLaunchToken`
-and `RhHolderRewards`, verified once each; Blockscout matches every
-later instance by bytecode.
+The 194 stock tokens are proxies sharing one implementation, admitted by code hash - ask `RhPairRegistry.isAdmitted(address)`. Launched tokens (`AdvancedLaunchToken`) and distributors (`RhHolderRewards`) are verified once; Blockscout matches later instances by bytecode.
 
 ## Pool parameters
 
-Every BaseStonk pool on either chain uses fee `3000` and tick spacing
-`60`, with that chain's launcher hook installed. The full PoolKey shape, the launch tuple and
-the events each contract emits are on the
-[on-chain page](/integration/onchain).
+Fee `3000`, tick spacing `60`, that chain's launcher hook. PoolKey, tuples and events: [on-chain](/integration/onchain).

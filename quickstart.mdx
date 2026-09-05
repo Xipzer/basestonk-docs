@@ -1,54 +1,45 @@
 ---
 title: "Quickstart"
-description: "From wallet to first trade in two minutes."
+description: "Trade a token or launch one, in three steps each."
 icon: "bolt"
 ---
 
-## Trade a token
+## Trade
 
 <Steps>
-  <Step title="Connect a wallet">
-    Open [basestonk.io](https://basestonk.io) and connect any EVM wallet.
-    Pick **Base** or **Robinhood Chain** from the header; the site asks
-    the wallet to switch networks when it needs to. Desktop and phone;
-    mobile wallets connect through WalletConnect.
+  <Step title="Connect">
+    Open [basestonk.io](https://basestonk.io). Any EVM wallet; mobile through WalletConnect. Pick **Base** or **Robinhood Chain** in the header.
   </Step>
   <Step title="Pick a token">
-    The list sorts by market cap, volume, holders or age. Every card shows
-    the pair the token is priced in and any tax mechanics it launched with.
+    Sort by market cap, volume, holders or age. Each card shows the pair and the tax.
   </Step>
   <Step title="Buy with what you hold">
-    On crypto-paired tokens you can pay in ETH, WETH or USDC on Base, or
-    ETH, WETH or USDG on Robinhood Chain - the trade panel routes into the
-    pair automatically. You do not need to hold the pair asset first.
+    Pay in ETH, WETH or the chain's stable (USDC on Base, USDG on Robinhood Chain). The panel routes into the pair for you.
   </Step>
 </Steps>
 
 <Note>
-  Most stock-paired tokens trade from plain ETH too. The exception is a
-  handful of Coinbase B20 stocks not yet issued on-chain - for those you
-  must already hold the stock. See [stock pairs](/stock-pairs).
+A few Coinbase B20 stocks on Base have no on-chain market yet. For those you must already hold the stock - the panel says so. [Stock pairs &rarr;](/stock-pairs)
 </Note>
 
-## Launch a token
+## Launch
 
 <Steps>
-  <Step title="Open the create form">
-    [basestonk.io/create](https://basestonk.io/create). Launching is free -
-    you pay gas and your own optional dev buy.
+  <Step title="Open the form">
+    [basestonk.io/create](https://basestonk.io/create). Launching is free; you pay gas and any dev buy.
   </Step>
-  <Step title="Name it, pick its pair, set the opening market cap">
-    Between \$500 and \$10,000 for standard pairs, and \$250 to \$15,000 for
-    gated ecosystem pairs. The contract converts your figure to a pool
-    price using the pair's verified on-chain price at execution time.
+  <Step title="Name, pair, opening market cap">
+    | Pair | Cap range |
+    |---|---|
+    | Standard, Base | \$500 - \$10,000 |
+    | Gated ecosystem, Base | \$250 - \$15,000 |
+    | Any, Robinhood Chain | \$250 - \$15,000 |
+
+    The pair's live on-chain price converts your figure to a pool price when you sign.
   </Step>
   <Step title="Optionally buy in the same transaction">
-    Your dev buy executes atomically with the pool opening - nobody can get
-    in ahead of you. Paid to your wallet it is hard-capped at 10% of
-    supply; locked in a [vesting vault](/vesting) it is uncapped, with the
-    schedule published on-chain in the launch transaction.
+    Nobody gets in ahead of you. To your wallet: capped at 10% of supply. Into a [vesting vault](/vesting): uncapped, schedule public on-chain.
   </Step>
 </Steps>
 
-Everything configurable at launch - fees, dividends, buybacks, holding
-caps - is covered in [Launching a token](/launching).
+Everything else on the form - fees, dividends, buybacks, caps - is on [Launching](/launching).

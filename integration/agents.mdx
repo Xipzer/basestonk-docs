@@ -1,293 +1,179 @@
 ---
 title: "AI agents"
 description: "The machine surface: /api/v1, wallet-signed sessions, and prepared transactions the API never signs."
-icon: "microchip"
+icon: "robot"
 ---
 
-Everything on this page is built for a client that branches on fields
-rather than reading prose: versioned paths, coded errors, a published
-OpenAPI document, and two endpoints that assemble a transaction for your
-key to sign.
+Versioned paths, coded errors, a published OpenAPI document, and two
+endpoints that assemble a transaction for **your** key to sign.
 
 <Warning>
-  **BaseStonk never signs, never relays and never broadcasts.** The
-  `/prepare` endpoints return an *unsigned* transaction - `to`, `data`,
-  `value`, `chainId` - and the sending is yours. A client waiting for a
-  transaction hash from this API is waiting forever.
+**BaseStonk never signs, relays or broadcasts.** `/prepare` returns an unsigned transaction - `to`, `data`, `value`, `chainId`. Sending is yours. A client waiting for a hash from this API waits forever.
 </Warning>
 
-## The `/api/v1` surface
+## `/api/v1`
 
-Every endpoint on the [REST API](/integration/api) is also served under
-`/api/v1/` with the same data reshaped into a machine contract:
+Every [REST endpoint](/integration/api) is also served under `/api/v1/`
+as a machine contract:
 
-- **Coded errors.** `{"error":{"code":"rate_limited","message":"rate limited","retryAfter":21}}`
-  instead of prose - [the code reference](#error-code-reference).
-- **One list envelope.** Every paged list carries `items` and
-  `nextOffset` - pass it back as `offset`, stop at `null`.
-- **Idempotency echo.** An `Idempotency-Key` header is echoed back.
-- Every response carries `x-bstonk-api-version: 1`.
-
-The machine descriptions of the whole surface:
-
-```bash
-GET https://api.basestonk.io/api/v1/openapi.json   # OpenAPI 3.1
-GET https://api.basestonk.io/api/v1/llms.txt       # the same, for a context window
-```
+| | |
+|---|---|
+| Errors | `{"error":{"code":"rate_limited","message":"…","retryAfter":21}}` |
+| Lists | `items` and `nextOffset` - pass it back as `offset`, stop at `null` |
+| Headers | `x-bstonk-api-version: 1`; an `Idempotency-Key` is echoed |
+| Spec | `GET /api/v1/openapi.json` (OpenAPI 3.1) · `GET /api/v1/llms.txt` |
 
 <Note>
-  **Those two are canonical; this page is orientation.** Both are
-  generated from one registry in the API's own source, so they cannot
-  drift from what the server does. Treat any body shown here as an
-  example and the spec as the authority.
+The spec is canonical; this page is orientation. Both are generated from one registry in the API's source and cannot drift from the server.
 </Note>
 
-Unversioned paths keep their exact shapes forever; `/api/v1` is where the
-contract is promised. Responses evolve additively on both - ignore
-unknown fields.
+## Budgets
 
-## Budgets and refusals
-
-**A bearer buys, it never gates.** Every read works without one. An
-identity changes which bucket you spend from:
+A bearer buys budget; it never gates. Every read works without one.
 
 | Tier | Budget | Keyed to |
 |---|---|---|
-| anonymous | 120 units / min | your IP (an IPv4 address, or an IPv6 /64) |
-| bearer | 360 units / min | your **wallet**, per route lane |
-| envelope | 360 units / min | your **IP**, across every lane and every wallet |
-| minting | 3 sessions / hour | your IP |
+| anonymous | 120 units / min | IP (IPv4 address or IPv6 /64) |
+| bearer | 360 units / min | your wallet, per lane |
+| envelope | 360 units / min | your IP, across every lane and wallet |
+| minting | 3 sessions / hour | IP |
 
-With a bearer you spend from the wallet bucket *and* the envelope at
-once; the tighter of the two is what `x-ratelimit-remaining` reports. The
-envelope exists because wallets are free to create - without it, one
-address could mint sessions in a loop and print budget.
+A bearer spends from the wallet bucket *and* the envelope; the tighter
+one is what `x-ratelimit-remaining` reports. `x-bstonk-identity` says
+which answered - `wallet` or `ip` - and is the only way to notice a
+bearer silently stopped working. `/prepare` costs 10 units.
 
-**`x-bstonk-identity` tells you which budget answered** - `wallet` when
-the bearer was honoured, `ip` when it was absent, expired or invalid.
-Reads still succeed in the `ip` case, so this header is the only way to
-notice a bearer silently stopped working.
+## Errors
 
-<Warning>
-  **A 429 means refused, never empty.** A client that maps a failed
-  fetch to an empty array will report zeros for data that exists, and at
-  machine speed it will do so confidently. Honour `retry-after`.
-</Warning>
+Branch on status and `code`, never on `message`.
 
-## Error code reference
-
-`error.code` is the stable value for program logic; `message` is
-human-readable text that may improve over time. Branch on status and
-code, never on message.
-
-| Code | Status | When | What to do |
+| Code | Status | When | Do |
 |---|---|---|---|
-| `invalid_request` | `400` | a malformed address, interval or parameter | correct it; do not retry unchanged |
-| `validation_failed` | `400` | the body failed schema validation - `detail` names the fields | fix the named fields |
-| `unknown_chain` | `400` | a chain other than `base` or `robinhood` | use one of those |
-| `unauthorized` | `401` | the signature is absent, expired, or already used | sign and mint a fresh session |
-| `forbidden` | `403` | the bearer lacks the scope, or the creator is not the bearer's wallet | sign the right `action`; launch as yourself |
-| `not_found` | `404` | no row for that identifier | verify it; do not loop on an unchanged 404 |
-| `conflict` | `409` | every mined address candidate already holds code | prepare again for a fresh salt |
-| *(verdict)* | `422` | a prepare failed its checks - the full verdict is the body | read `verdict.checks`, fix the named precondition, re-prepare |
-| `rate_limited` | `429` | a budget is exhausted - `retryAfter` says how long | wait it out; never map to empty |
-| `internal` | `500` | an unexpected fault | retry once |
-| `unavailable` | `503` | a dependency is down, or launching is closed | retry with capped backoff |
-| `payment_required` | `402` | **reserved, inert today** - no endpoint returns it | handle early and it costs nothing later |
+| `invalid_request` | 400 | malformed address, interval or parameter | fix; do not retry unchanged |
+| `validation_failed` | 400 | body failed schema - `detail` names fields | fix the named fields |
+| `unknown_chain` | 400 | not `base` / `robinhood` (8453 / 4663) | use one of those |
+| `unauthorized` | 401 | signature absent, expired or already used | mint a fresh session |
+| `forbidden` | 403 | bearer lacks the scope, or creator is not the bearer's wallet | sign the right `action`; launch as yourself |
+| `not_found` | 404 | no row | verify; do not loop |
+| `conflict` | 409 | every mined address already holds code | prepare again |
+| *(verdict)* | 422 | a prepare failed its checks - full verdict in the body | read `verdict.checks`, fix, re-prepare |
+| `rate_limited` | 429 | budget exhausted | wait `retryAfter`; never map to empty |
+| `internal` | 500 | unexpected fault | retry once |
+| `unavailable` | 503 | dependency down, or launching closed | capped backoff |
+| `payment_required` | 402 | **reserved, inert** | handle early; will carry an `accepts` array naming an x402 scheme |
 
-When `402` arrives it will carry an `accepts` array naming an x402
-scheme.
+Never sign past `expiresAtBlock` - re-prepare instead.
 
-## Retry policy
+## Sessions
 
-- retry `429` after `retryAfter`
-- retry `500` once; retry `503` with capped exponential backoff and jitter
-- do not blindly retry `400`, `401`, `403` or `404`
-- a `422` is not a retry - it is a precondition to fix, named in
-  `verdict.checks`
-- re-prepare after `expiresAtBlock`; **never sign a transaction past its
-  expiry**
-- a launch re-prepare is free of duplicates by construction - the
-  [idempotency key is the CREATE2 salt](#staleness-and-why-re-preparing-is-safe)
-
-## Sessions: a wallet signature, briefly a bearer
-
-A session keys your rate budget to your **wallet** instead of your IP -
-which matters the moment your agent shares datacenter egress with
-somebody else's. Sign one message, exchange it once:
+Keys your budget to your wallet instead of your IP. Sign once, exchange once.
 
 ```bash
 POST /api/v1/agent/session
-  headers:
-    x-wallet-address:   0xYourWallet
-    x-wallet-signature: <signature>
-    x-wallet-expires:   <unix ms, up to 5 minutes ahead>
-  body: { "scopes": ["read"] }              # or ["read","prepare"]
-
-→ { "token": "v1.…", "wallet": "0x…", "scopes": ["read"], "expiresAt": 1788… }
+  x-wallet-address:   0xYourWallet
+  x-wallet-signature: <EIP-712 signature>
+  x-wallet-expires:   <unix ms, up to 5 min ahead>
+  { "scopes": ["read"] }              # or ["read","prepare"]
+→ { "token": "v1.…", "wallet": "0x…", "scopes": [...], "expiresAt": … }
 ```
 
-The signature is EIP-712 typed data - domain
-`{ name: "BaseStonk", version: "1", chainId: 8453 }` (or `4663` if the
-wallet is on Robinhood Chain; the server accepts either), type
-`Authorization { action: string, address: address, expiresAt: uint256, detail: string }` -
-with `detail` empty and `action` = `agent:session` for the read tier or
-`agent:session:prepare` for read + `/prepare`. The scope is part of what
-the wallet signs, on purpose: a signature collected for reads cannot be
-redeemed for the prepare tier.
+| Typed data | |
+|---|---|
+| Domain | `{ name: "BaseStonk", version: "1", chainId: 8453 }` - or `4663`; either is accepted |
+| Type | `Authorization { action: string, address: address, expiresAt: uint256, detail: string }` |
+| `action` | `agent:session` for read · `agent:session:prepare` for read + `/prepare` |
+| `detail` | empty |
 
-Rules that will save you a debugging session:
+The scope is in what the wallet signs: a read signature cannot be
+redeemed for prepare.
 
-- **A signature mints exactly one session** - a replay answers
-  `401 signature already used`.
-- **Bearers last one hour.** `GET /api/v1/agent/whoami` says which
-  identity and scopes a bearer carries without spending a real read.
-- **Minting is rationed at 3 per hour per IP.**
-- The same [cost weighting](/integration/api#rate-limits) applies; a
-  `/prepare` call costs **10 units** on top of the shared lane's 1.
+| Rule | |
+|---|---|
+| One signature, one session | a replay answers `401 signature already used` |
+| Bearers last | 1 hour - `GET /api/v1/agent/whoami` reports identity and scopes without spending a read |
+| Minting | 3 per hour per IP |
 
 ## Prepared transactions
 
-Two endpoints assemble, check and simulate a transaction, then hand it to
-you unsigned. Both demand the `prepare` scope, and both take a `chainId`
-in the body - `8453` for Base, `4663` for Robinhood Chain, absent means
-Base. The response's `tx.chainId` echoes it, and `tx.to` is that chain's
-launcher or router. An unknown `chainId` is a `400` naming the chains
-served, never a silent default. The shared response shape:
+Both endpoints need the `prepare` scope and take `chainId` in the body
+(`8453` or `4663`; absent means Base). `tx.chainId` echoes it; `tx.to`
+is that chain's launcher or router.
 
 ```json
 {
-  "intent":       { "…what the calldata means, decoded…" },
-  "tx":           { "to": "0x…", "data": "0x…", "value": "0", "chainId": 8453 | 4663, "gas": "1829382" },
-  "approvalTx":   null,
-  "verdict":      { "ok": true, "checks": [ { "id": "…", "ok": true, "detail": "…" } ] },
+  "intent":         { "…the calldata, decoded…" },
+  "tx":             { "to": "0x…", "data": "0x…", "value": "0", "chainId": 4663, "gas": "1829382" },
+  "approvalTx":     null,
+  "verdict":        { "ok": true, "checks": [ { "id": "…", "ok": true, "detail": "…" } ] },
   "expiresAtBlock": "50719091",
   "idempotencyKey": "0x…"
 }
 ```
 
-- **`verdict.checks`** is what was actually asked of the chain. A failed
-  check answers **HTTP 422 with the full verdict in the body** - never a
-  200 with a quiet flag. Branch on status, then read `checks`.
-- **`gas`** is the estimate plus 25% headroom, or `null` when the
-  simulation failed.
-
-### `approvalTx` comes first
-
-When a request moves tokens the contract must pull, the answer may carry
-an `approvalTx`. **Send it, wait for the receipt, then send `tx`.** It is
-a separate field rather than an array so the main transaction cannot race
-its own precondition, and it approves **exactly the amount needed, never
-unbounded**. It is `null` once the allowance suffices - re-preparing
-after the approval lands is how you confirm you are ready.
-
-### Staleness, and why re-preparing is safe
-
-**`expiresAtBlock`** is roughly five minutes out. Past it, re-prepare
-rather than signing - the simulation was true at one block only.
-
-Re-preparing a launch costs nothing: **the idempotency key is the CREATE2
-salt** - `keccak256(sender, salt)` - the same value the chain itself
-collision-checks. If the launch has not landed you get the same
-transaction back; if it has, the verdict says so and steps to the next
-free address. A trade's `idempotencyKey` is `null` for the opposite
-reason: two identical swaps are two legitimate trades, and retry safety
-on a trade is your nonce, not our field.
+| Field | |
+|---|---|
+| `verdict.checks` | what was actually asked of the chain. A failed check is **HTTP 422 with the full verdict** - never a 200 with a flag. |
+| `gas` | estimate + 25%, or `null` when the simulation failed |
+| `approvalTx` | present when the contract must pull tokens. **Send it, wait for the receipt, then send `tx`.** Approves exactly the amount, never unbounded. `null` once the allowance suffices. |
+| `expiresAtBlock` | ~5 minutes out. Past it, re-prepare. |
+| `idempotencyKey` | a launch: the CREATE2 salt, `keccak256(sender, salt)` - re-preparing returns the same tx or steps to the next free address. A trade: `null` - two identical swaps are two trades. |
 
 ### Launch
 
 ```bash
 POST /api/v1/agent/launch/prepare
 {
+  "chainId": 8453,
   "name": "My Token", "symbol": "MTK",
-  "pairToken": "0x0F61Edbfe6Cd86024C0f210c0695B08df55fdfc9",
-  "marketCapUsd": 5000,
-  "metadataUri": "ipfs://…",
-  "buyTaxBps": 100, "sellTaxBps": 100,
-  "maxWalletBps": 250,
-  "devBuyPair": "0"
+  "pairToken": "0x…", "marketCapUsd": 5000, "metadataUri": "ipfs://…",
+  "buyTaxBps": 100, "sellTaxBps": 100, "maxWalletBps": 250, "devBuyPair": "0"
 }
 ```
 
-The verdict runs the checks a launch actually fails on: the current
-launcher generation, the pair being priceable *right now* (a paused feed
-or a too-thin route surfaces here, named, instead of as a bare revert in
-your wallet), the salt sorting the token below its pair, the CREATE2
-address being free, and finally `eth_call` plus a gas estimate against
-the live launcher.
+The creator is always the bearer's wallet. `devBuyPair` is raw pair
+units; the intent reports it as amount, USD and `percentOfSupplyAtOpen`.
 
-- **The creator can only be your bearer's wallet.**
-- **`devBuyPair` is raw units of the pair token**; the intent reports it
-  as pair amount, USD, and `percentOfSupplyAtOpen`. A non-zero dev buy
-  gets funding and allowance checks and an `approvalTx` when short.
+The chain and the pair decide the leg; `intent.leg` names it:
 
-**The chain and the pair decide which leg you get, and `intent.leg` names it:**
+| Leg | Chain | Pair | Priced by | Checks |
+|---|---|---|---|---|
+| `direct` | Base | a pair the oracle registry has a feed for | the launcher's registry | generation, priceable now, salt sorts below pair, address free, `eth_call`, gas |
+| `gated` | Base | an ecosystem token with no feed | a route the RoutedQuoteGate re-verifies hop by hop. Intent adds `route`, `issuerFactory`, `startSqrtPriceX96`, `impliedCapUsd`; `gate_admits` fails when the cap is outside the band | as above |
+| Robinhood | 4663 | USDG, WETH, any admitted Robinhood stock | `RhPairRegistry` | `pair_admitted`, `checkpoint`, `simulated`, `gas_estimated`, `dev_buy_denominated` |
 
-| `intent.leg` | Chain | Pair | Priced by |
-|---|---|---|---|
-| `direct` | Base | one the oracle registry holds a feed for - USDC, WETH, cbBTC, \$BSTONK, tokenized stocks | the launcher's own registry |
-| `gated` | Base | an ecosystem token with no feed | a route the RoutedQuoteGate re-verifies hop by hop |
-| Robinhood | 4663 | USDG, WETH, or any admitted Robinhood Stock Token | `RhPairRegistry` - Chainlink where a feed exists, the pair's own market behind a depth gate otherwise |
-
-On Robinhood Chain the verdict's checks are `pair_admitted`, `checkpoint`
-(a v4-priced pair needs a checkpoint 60-3600s old; if one is missing the
-answer carries the transaction that posts it), `simulated`,
-`gas_estimated` and `dev_buy_denominated`. The tuple has no basket seat -
-`vaultShareBps`, `issuers` and `renounceBasket` are absent - and the
-returned `tx.to` is `RhLauncher`. Measured live: a USDG-paired prepare
-answers `200` with the launch simulated and gas-estimated on 4663.
-
-You do not choose. A gated answer additionally carries `route`,
-`issuerFactory`, `startSqrtPriceX96` and `impliedCapUsd` in the intent;
-`gate_admits` is the check that fails when the cap is outside the gated
-band. A pair that is neither registered nor routable comes back as a
-**422 with `tx.data` empty** - there is genuinely nothing to sign.
+A pair that is neither registered nor routable is a **422 with `tx.data`
+empty** - nothing to sign. On Robinhood Chain a v4-priced pair needs a
+checkpoint 60-3600s old; if one is missing, the answer carries the
+transaction that posts it.
 
 ### Trade
 
 ```bash
 POST /api/v1/agent/trade/prepare
-{
-  "token": "0x…",
-  "side": "buy",
-  "amountIn": "100000000000000000000",
-  "slippageBps": 300
-}
+{ "chainId": 8453, "token": "0x…", "side": "buy", "amountIn": "100000000000000000000", "slippageBps": 300 }
 ```
 
-`amountIn` is raw units of what you are *spending*: the pair token on a
-buy, the launched token on a sell. The answer is a swap through the venue
-router with `minOut` set from the quote and your slippage.
+`amountIn` is raw units of what you *spend*: the pair on a buy, the
+token on a sell.
 
-- **Quoted at the token's own tax, never a default.** Taxes here range to
-  10%, and a quote at an assumed rate reverts as `TooLittleReceived` - a
-  failure that reads as a broken pool. A token with no rate on record
-  refuses to quote rather than guessing.
-- **The chain outranks the quote.** The `eth_call` fill is compared
-  against `minOut` - a stale quote fails the verdict instead of failing
-  your transaction.
-- A fresh launch nobody has bought yet quotes buys from its entry
-  boundary; a sell into it is refused - the empty side has nothing to
-  sell into.
+| | |
+|---|---|
+| Quoted at | the token's own tax, never a default - an assumed rate reverts `TooLittleReceived`. No rate on record refuses to quote. |
+| Verified by | the `eth_call` fill against `minOut` - a stale quote fails the verdict, not your transaction |
+| Fresh launch, nobody has bought | buys quote from the entry boundary; a sell is refused - the empty side has nothing to sell into |
 
-## The loop, end to end
+## The loop
 
 ```text
-1. sign agent:session:prepare        →  POST /agent/session      →  bearer
-2. POST /agent/launch/prepare        →  422? read verdict.checks, fix, repeat
-3. approvalTx present? sign, send, wait for the receipt
-4. re-prepare                        →  200, verdict.ok
+1. sign agent:session:prepare   →  POST /agent/session          →  bearer
+2. POST /agent/launch/prepare   →  422? read verdict.checks, fix, repeat
+3. approvalTx present?          →  sign, send, wait for the receipt
+4. re-prepare                   →  200, verdict.ok
 5. sign tx yourself, send it yourself, before expiresAtBlock
 ```
 
-Step 5 is the whole design. Your key never leaves your process, and this
-API never learns it exists.
+Your key never leaves your process. This API never learns it exists.
 
-## A caveat worth knowing before you debug it
-
-BaseStonk sits behind a CDN that bot-scores traffic, and requests from
-datacenter address space can be challenged **at the edge - before the API
-sees them at all**. The tell is a `403` with no JSON error envelope:
-every refusal this API itself issues is JSON with an `error.code`. If you
-hit one, it is the edge, not your bearer. A carve-out for the `/api/v1`
-paths is pending.
+<Note>
+The CDN bot-scores datacenter traffic and can challenge **at the edge**, before the API sees the request. The tell: a `403` with no JSON `error.code`. Every refusal this API issues is JSON. A carve-out for `/api/v1` is pending.
+</Note>

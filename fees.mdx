@@ -4,138 +4,69 @@ description: "Who pays what, and who earns it."
 icon: "coins"
 ---
 
-Every trade on a BaseStonk pool pays the fee its creator set at launch.
-Transfers between wallets are free. The fee is built into the pool
-itself, so there is no route around it.
+Every trade pays the fee its creator set at launch. Transfers are free.
+The fee is taken inside the swap, so there is no route around it.
 
 <Warning>
-**The fee is a percentage of each trade's volume - not a share of a
-pool's trading fee.** On a \$10,000 swap against a token routing 3% to
-holders, \$300 flows to holders - not 3% of some small LP fee. This is
-what makes the dividend numbers on the
-[baskets page](/dividend-baskets) as large as they are.
+**The fee is a percentage of each trade, not a share of an LP fee.** A \$10,000 swap against a token routing 3% to holders sends \$300 to holders.
 </Warning>
 
-## Simple launches
+## Rates
 
-| | Rate |
-|---|---|
-| Trade fee | **1%** |
-| → creator's half - by default paid to holders, half of that via the \$BSTONK basket | 0.5% |
-| → to the platform | 0.5% |
+| | Simple | Advanced |
+|---|---|---|
+| Trade fee | 1% | buy and sell rates set independently, each 0 - 10% |
+| Platform's cut | 0.5% | **min(half the rate, 1%)** |
+| Creator's cut | 0.5% | the rest |
 
-By default the creator's half goes to holder dividends, with half of that
-routed through the \$BSTONK basket. The creator can redirect it to a fee
-address instead, and that address can be handed to a new owner later.
-
-<Note>
-**On Robinhood Chain there is no \$BSTONK basket**, so the creator's half
-is holder dividends or a fee address and nothing else. The platform's
-half is converted to USDG and held on that chain rather than burnt as
-\$BSTONK. The rates are identical; only the destinations differ.
-[Chains &rarr;](/chains#where-the-platforms-cut-goes)
-</Note>
-
-## Advanced launches
-
-The creator sets two rates - a **buy tax** and a **sell tax**, each
-anything up to **10%**, independent of each other - and divides the
-creator's share between payees, buyback & burn, liquidity, and holder
-dividends. The split is one recipe applied to whichever rate a trade
-paid; only the rate differs by direction.
-
-The platform's cut of each trade is **min(half that trade's rate, 1%)**:
-
-| Rate the trade paid | Platform takes | Creator controls |
+| Rate paid | Platform | Creator |
 |---|---|---|
 | 1% | 0.5% | 0.5% |
 | 4% | 1% | 3% |
 | 10% | 1% | 9% |
 
-A token taxing 1% on buys and 10% on sells pays the platform 0.5% of each
-buy and 1% of each sell.
+A token at 1% on buys and 10% on sells pays the platform 0.5% of each buy and 1% of each sell.
 
-<Note>
-  Both rates and the split are enforced by the fee hook inside the swap
-  itself. Nothing about them can be changed after launch - by anyone.
-</Note>
+## Where each cut goes
+
+<Tabs>
+  <Tab title="Base">
+    | Cut | Goes to |
+    |---|---|
+    | Platform | \$BSTONK buyback and burn |
+    | Creator, Simple | holders as dividends by default, half of that via the \$BSTONK basket - or one fee address |
+    | Creator, Advanced | the [wedges](/launching#the-wedges) in the shares you set |
+  </Tab>
+  <Tab title="Robinhood Chain">
+    | Cut | Goes to |
+    |---|---|
+    | Platform | converted to USDG, held on 4663 |
+    | Creator, Simple | holders as dividends, or one fee address |
+    | Creator, Advanced | the [wedges](/launching#the-wedges), minus the \$BSTONK basket |
+
+    Same rates, different destinations. [Why &rarr;](/chains#where-the-platforms-cut-goes)
+  </Tab>
+</Tabs>
 
 ## The anti-sniper toll
 
-A launch can arm a decaying toll on its opening minutes: buys inside the
-window pay a rate falling from up to 99% down to the buy tax. The
-platform's cut stays capped at 1% throughout - everything above it flows
-through the creator's own split. Sells never pay the toll.
-See [Launching](/launching#the-anti-sniper-toll).
+Buys in a launch's opening window pay a rate decaying from up to 99% to
+the buy tax. The platform's cut stays capped at 1% throughout; everything
+above flows through the creator's split. Sells never pay it.
+[Launching &rarr;](/launching#protections)
 
-## Where the fee is taken
+## Nothing changes after launch
 
-The hook takes the fee during the swap, inside the pool - so it cannot be
-dodged by trading through another route, and a bot that quotes without it
-reverts. Integrators: see
-[the three things every integration must handle](/integration/onchain#three-things-every-integration-must-handle).
-
-## Further reading
+Rates and split are enforced by the pool's hook and immutable - by anyone.
 
 <AccordionGroup>
-
-<Accordion title="The platform cut, as a formula">
-
-The platform's share is capped, so a creator who raises their tax keeps
-every basis point above the cap:
-
-$$
-\text{platform} = \min\!\left(\frac{\tau}{2},\ 100\ \text{bps}\right)
-\qquad
-\text{creator} = \tau - \text{platform}
-$$
-
-where $\tau$ is the rate the trade paid in basis points -
-$\tau_{\text{buy}}$ or $\tau_{\text{sell}}$, each $0 \le \tau \le 1000$.
-
-The consequence is that the platform's take as a *proportion* of the tax
-falls away as the tax rises - 50% of a 1% tax, 25% of a 4% tax, 10% of a
-10% tax. There is no tier, no negotiation and no discount; it is the same
-arithmetic for every launch.
-
+<Accordion title="The platform cut as a formula">
+$\text{platform} = \min(\tau/2,\ 100\ \text{bps})$, $\text{creator} = \tau - \text{platform}$, for $0 \le \tau \le 1000$ bps. The platform's share *as a proportion* falls as the tax rises: 50% of 1%, 25% of 4%, 10% of 10%. No tiers, no discounts.
 </Accordion>
-
 <Accordion title="Why volume, not market cap, sets what holders earn">
-
-A holder's dividend flow is a function of **turnover**, not price:
-
-$$
-\text{paid to holders per day} = V_{24h} \times \frac{r}{10{,}000}
-$$
-
-where $V_{24h}$ is 24-hour volume in dollars and $r$ is the rewards share
-in basis points.
-
-Nothing in that expression contains market cap. A $2M token turning over
-its own cap once a day pays holders more than a $50M token that barely
-trades. This is why the figures on the baskets page look large next to a
-conventional "LP fee share" - those pay a fraction of a fraction of
-volume, and this pays a fraction of volume.
-
+$\text{paid per day} = V_{24h} \times r / 10{,}000$. Market cap is not in it. A \$2M token turning over its cap daily pays more than a \$50M token that barely trades.
 </Accordion>
-
-<Accordion title="What a trader actually receives">
-
-For a swap of size $x$ against a pool taxing $\tau$ in that direction:
-
-$$
-\text{out} = \big(1 - \tfrac{\tau}{10{,}000}\big) \cdot f_{\text{pool}}(x)
-$$
-
-where $f_{\text{pool}}$ is the ordinary constant-product or concentrated
-curve, and $\tau$ is the buy or sell rate as the direction demands. The
-tax is applied by the hook **inside** the swap, so it composes with price
-impact rather than replacing it.
-
-An aggregator that quotes $f_{\text{pool}}(x)$ alone and sets `minOut`
-from it will revert every time - the quote is right about the curve and
-wrong about the pool.
-
+<Accordion title="What a trader receives">
+$\text{out} = (1 - \tau/10{,}000) \cdot f_{\text{pool}}(x)$. The tax composes with price impact inside the swap. An aggregator that quotes the curve alone and sets `minOut` from it reverts every time.
 </Accordion>
-
 </AccordionGroup>

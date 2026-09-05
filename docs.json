@@ -5,7 +5,7 @@
   "appearance": {
     "default": "dark"
   },
-  "description": "Launch a token on Base and trade it from its first block - priced in USDC, ETH, BTC, tokenized stocks, or $BSTONK.",
+  "description": "Launch a token on Base or Robinhood Chain and trade it from its first block - priced in stables, majors, tokenized stocks, or $BSTONK.",
   "colors": {
     "primary": "#0052FF",
     "light": "#00C2FF",
@@ -19,7 +19,7 @@
   "navigation": {
     "groups": [
       {
-        "group": "Welcome",
+        "group": "Start here",
         "pages": [
           "index",
           "quickstart",
@@ -27,41 +27,32 @@
         ]
       },
       {
-        "group": "Launching",
+        "group": "Launch a token",
         "pages": [
           "launching",
           "fees",
           "dividend-baskets",
-          "wedges",
           "vesting",
-          "cto",
-          "stock-pairs",
-          "b20-mode"
+          "stock-pairs"
         ]
       },
       {
-        "group": "Trading",
+        "group": "Trade and earn",
         "pages": [
           "trading",
-          "sell-mechanics",
           "bstonk",
-          "referrals"
+          "referrals",
+          "token-safety"
         ]
       },
       {
-        "group": "Builders",
+        "group": "Build on it",
         "pages": [
           "integration/api",
           "integration/agents",
-          "integration/onchain",
           "integration/trading-bots",
+          "integration/onchain",
           "integration/contracts"
-        ]
-      },
-      {
-        "group": "Token safety",
-        "pages": [
-          "token-safety"
         ]
       }
     ]
@@ -84,5 +75,23 @@
       "x": "https://x.com/BaseStonk",
       "website": "https://basestonk.io"
     }
-  }
+  },
+  "redirects": [
+    {
+      "source": "/wedges",
+      "destination": "/launching#the-wedges"
+    },
+    {
+      "source": "/sell-mechanics",
+      "destination": "/trading#the-sell-floor"
+    },
+    {
+      "source": "/cto",
+      "destination": "/vesting#community-takeover"
+    },
+    {
+      "source": "/b20-mode",
+      "destination": "/stock-pairs"
+    }
+  ]
 }

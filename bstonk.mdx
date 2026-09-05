@@ -1,185 +1,57 @@
 ---
 title: "$BSTONK"
-description: "Two flywheels and two dividend streams, both fed by the whole platform - not just by its own trading."
-icon: "gem"
+description: "The platform token. Two buyback engines and two dividend streams, both fed by the whole venue."
+icon: "coins"
 ---
 
-\$BSTONK is BaseStonk's own token, launched through the same machinery as
-everything else on the venue. It lives on **Base**, and only on Base -
-there is no \$BSTONK on Robinhood Chain, no bridge, and no version of it
-there. Address:
+BaseStonk's own token, launched through the same machinery as everything
+else. **Base only** - no \$BSTONK exists on Robinhood Chain, and there is
+no bridge. [Why &rarr;](/chains#where-the-platforms-cut-goes)
+
 [`0x0F61Edbfe6Cd86024C0f210c0695B08df55fdfc9`](https://basescan.org/address/0x0F61Edbfe6Cd86024C0f210c0695B08df55fdfc9#code)
 
-What makes it different from every other platform token is that **it is not
-paid by its own trading alone.** Two mechanisms feed it, and both of them
-scale with every launch on Base rather than with \$BSTONK's own chart.
-Robinhood Chain launches do not feed either: the platform's cut there is
-held as USDG on that chain by design.
-[Why &rarr;](/chains#where-the-platforms-cut-goes)
+## Two buybacks
+
+| | Its own tax | The whole platform |
+|---|---|---|
+| Source | 0.25% of every \$BSTONK trade | the platform's cut of **every launch on Base** |
+| Mechanism | bought and burnt inside the swap, by the hook | swept, converted to \$BSTONK, burnt - on a schedule, nobody pressing anything |
+| Scales with | \$BSTONK's own volume | every token that ever launches |
+
+The second is the one no other launchpad has: **platform revenue is a
+standing bid on its own token, and everything it buys is destroyed.** A
+launch with nothing to do with \$BSTONK still burns \$BSTONK by trading.
 
 <Note>
-**Over 9.6% of the total supply has already been burnt** - more than 96
-million tokens, permanently, and the number only moves one way. The live
-figure is on the \$BSTONK token page under *Platform flywheel*; the one
-quoted here is a checkpoint, and it is always an underestimate.
+**Over 10% of supply is already burnt.** The live figure is on the \$BSTONK token page under *Platform flywheel*. No mint function, no owner: the number only moves down.
 </Note>
 
-## The dual flywheel
+## Two dividend streams
 
-Most tokens have a buyback. \$BSTONK has two, running independently.
+| | USDC | The platform basket |
+|---|---|---|
+| Source | 0.25% of every \$BSTONK trade | a share of participating launches' rewards, venue-wide |
+| Paid as | USDC, by the contract | the assets themselves - dozens of slots, growing wider as launches join and deeper as they trade |
 
-<Columns cols={2}>
+Every other basket is fed by one token's volume. This one is fed by all
+of them.
 
-<Card title="Flywheel one: its own tax" icon="arrows-rotate">
-A quarter of every \$BSTONK trade is spent buying \$BSTONK and burning it -
-**inside the swap**, by the hook, in the same transaction. No treasury, no
-multisig, nobody deciding when.
+## As a pair
 
-Scales with: \$BSTONK's own volume.
-</Card>
-
-<Card title="Flywheel two: the whole platform" icon="globe">
-The platform's cut of **every launch on the venue** - in whatever token that
-launch pays in - is sold, converted to \$BSTONK, and burnt. Automatically,
-on a schedule, without anyone pressing anything.
-
-Scales with: every token that ever launches here.
-</Card>
-
-</Columns>
-
-The second one is the part no competitor has. A launchpad normally takes its
-fee and keeps it. Here, **the platform's revenue is a standing bid on its own
-token, and everything it buys is destroyed.** A launch that has nothing to do
-with \$BSTONK still burns \$BSTONK, simply by trading.
-
-That is why the burn total is where it is. It is not one token's volume - it
-is the venue's.
-
-## The dual dividends
-
-The same doubling applies to what holders are paid.
-
-<Columns cols={2}>
-
-<Card title="Stream one: USDC, automatically" icon="dollar-sign">
-A quarter of every \$BSTONK trade is paid to holders as **USDC** - not as
-more of the token, not as a claim on something. Real dollars, delivered by
-the contract.
-</Card>
-
-<Card title="Stream two: the platform basket" icon="basket-shopping">
-\$BSTONK holders also receive from the **basket vault** - a portfolio built
-from a share of participating launches' rewards across the entire platform.
-</Card>
-
-</Columns>
-
-<Note>
-The basket vault currently carries **62 asset slots, 57 of them holding a
-balance**. It is the largest single basket on the platform, and it grows
-two ways at once: **wider** as new launches route a share into it, and
-**deeper** as those launches trade.
-</Note>
-
-Every other basket on BaseStonk belongs to one token and is fed by one
-token's volume. This one is fed by all of them. A holder is not betting
-on a single launch doing well - they are paid from the activity of the
-whole venue, in the assets themselves.
-
-## Supply only moves down
-
-Supply was fixed at launch. **There is no mint function and no owner.**
-Between the two flywheels and voluntary burns from the fee wallet, the only
-direction the number moves is down - and it has already moved more than
-nine and a half percent.
-
-## A pair, not just a token
-
-\$BSTONK is a registered launch pair: new tokens can be priced in it, pay
-their fees in it, and pay their holder dividends in it. Launches paired in
-\$BSTONK can still pay dividends in any other admitted asset through the same
-conversion engine that serves every basket.
-
-## Further reading
+\$BSTONK is a registered launch pair: tokens can be priced in it, pay fees
+in it, and pay dividends in it - or in any other admitted asset through
+the same conversion engine.
 
 <AccordionGroup>
-
-<Accordion title="The two burn rates, as formulae">
-
-The in-contract wedge burns as a function of \$BSTONK's own turnover:
-
-$$
-\text{burn}_{\text{self}} = \frac{V_{\text{BSTONK}} \cdot w_{\text{burn}}}{p}
-$$
-
-with $w_{\text{burn}} = 25\ \text{bps}$ and $p$ the price at the moment of
-the swap.
-
-The platform sweep burns as a function of **every other token's** turnover:
-
-$$
-\text{burn}_{\text{platform}} = \frac{1}{p}\sum_{i} V_i \cdot \min\!\left(\frac{\tau_i}{2},\,100\ \text{bps}\right)
-$$
-
-summed over every launch $i$ on the venue, where $\tau_i$ is that launch's
-tax. The two are additive and independent:
-
-$$
-\text{burn}_{\text{total}} = \text{burn}_{\text{self}} + \text{burn}_{\text{platform}}
-$$
-
-The second term has no ceiling that depends on \$BSTONK. It grows with the
-number of launches and their volume, which is why the burn curve steepens as
-the venue does rather than tracking one chart.
-
-Note the $1/p$ in both: **the same dollar burns more tokens at a lower
-price.** Buy pressure is strongest exactly when the price is weakest.
-
+<Accordion title="The two burn rates">
+$\text{burn}_{\text{self}} = V_{\text{BSTONK}} \cdot w_{\text{burn}} / p$ with $w_{\text{burn}} = 25$ bps.
+$\text{burn}_{\text{platform}} = \frac{1}{p}\sum_i V_i \cdot \min(\tau_i/2, 100\text{ bps})$ over every launch $i$.
+Additive and independent. The second has no ceiling that depends on \$BSTONK. The $1/p$ in both: the same dollar burns more tokens at a lower price.
 </Accordion>
-
-<Accordion title="Why a platform-wide basket is a different asset class">
-
-A single-token basket pays a holder in proportion to one token's volume:
-
-$$
-\text{flow}_{\text{single}} = V_{\text{token}} \cdot \frac{r}{10{,}000}
-$$
-
-The platform basket sums over the venue:
-
-$$
-\text{flow}_{\text{basket}} = \sum_{i \in \mathcal{L}} V_i \cdot \frac{r_i}{10{,}000} \cdot \nu_i
-$$
-
-where $\mathcal{L}$ is the set of participating launches and $\nu_i$ is the
-share each routes to the vault.
-
-The distinction is not size, it is **variance**. A single launch's flow is
-one random variable; the basket's is a sum over many, so idiosyncratic
-failures wash out and what remains is the venue's aggregate activity. Adding
-a launch adds a term - it never removes one.
-
+<Accordion title="Why a venue-wide basket is a different asset">
+One launch's flow is one random variable. The basket's is a sum over many - $\sum_i V_i \cdot r_i \cdot \nu_i / 10{,}000$ - so idiosyncratic failures wash out. Adding a launch adds a term; it never removes one.
 </Accordion>
-
 <Accordion title="How a vault round is allocated">
-
-A round pays each eligible holder:
-
-$$
-\text{payout}_h = A \cdot \frac{w_h}{\sum_j w_j}
-\qquad
-w_h = \sum_{t \in [t_0,\,t_1]} b_h(t)\,\Delta t
-$$
-
-so weight is balance **integrated over time**, not a snapshot. A snapshot is
-trivially sniped - buy before it, sell after - and the block is public when
-the round commits.
-
-Rounds are also paid in tranches on a rolling schedule rather than
-emptying the vault at once, so the vault always carries a balance and no
-single round is worth timing.
-
+$\text{payout}_h = A \cdot w_h / \sum_j w_j$ where $w_h$ is balance **integrated over time**, not a snapshot - a snapshot is trivially sniped. Rounds pay in rolling tranches, so the vault always carries a balance and no round is worth timing.
 </Accordion>
-
 </AccordionGroup>

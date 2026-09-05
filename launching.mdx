@@ -1,215 +1,107 @@
 ---
 title: "Launching a token"
-description: "One transaction: token, pool, opening price, dev buy."
+sidebarTitle: "Launching"
+description: "One transaction: token, pool, opening price, dev buy. Everything the form can set, and what each setting does."
 icon: "wand-magic-sparkles"
 ---
 
-Every launch mints a fixed supply of **1,000,000,000 tokens** and opens a
-Uniswap v4 pool seeded with 99% of it. The pair you pick is what your
-chart is quoted in forever.
+Every launch mints **1,000,000,000 tokens** and opens a Uniswap v4 pool
+with 99% of them. The pair you pick is what the chart is quoted in,
+forever. Same form on Base and Robinhood Chain - chain is the first
+choice, and the differences are marked below.
 
-This page is the same on **Base** and on **Robinhood Chain**. Where the
-two differ - what a token can be priced in, and one wedge that exists on
-Base only - it is marked where it occurs. Pick the chain on the form's
-first step; everything after it follows that choice.
-[The full comparison &rarr;](/chains)
+## What one signature does
 
-## What happens when you sign
+<Steps>
+  <Step title="Creates the token and opens the pool">
+    At the market cap you chose, converted to a pool price from the pair's live on-chain price.
+  </Step>
+  <Step title="Runs your dev buy">
+    If you asked for one. Nobody gets in ahead of you.
+  </Step>
+  <Step title="Proves the launcher holds nothing">
+    One token left in it and the whole transaction reverts. This is why liquidity can never be pulled.
+  </Step>
+</Steps>
 
-One transaction does all of it:
+| Pair | Opening cap |
+|---|---|
+| Standard, Base | \$500 - \$10,000 |
+| Gated ecosystem, Base | \$250 - \$15,000 |
+| Any, Robinhood Chain | \$250 - \$15,000 |
 
-1. **Your token is created** and its pool opens at the market cap you
-   chose, converted to a pool price using the pair's live on-chain price.
-2. **Your dev buy executes**, if you asked for one - nobody can get in
-   ahead of you.
-3. **The launcher proves it holds nothing.** The transaction reverts if a
-   single token is left in it - which is why the liquidity can never be
-   pulled.
+Some stock pairs refuse very low caps; the form warns and shows the exact
+opening price before you sign.
 
-<Warning>
-  Opening market caps run \$500 to \$10,000 for standard pairs and \$250
-  to \$15,000 for gated ecosystem pairs on Base, and \$250 to \$15,000
-  for every pair on Robinhood Chain. On some stock pairs, very low caps
-  are refused - the form warns you and shows the exact opening price
-  before you sign.
-</Warning>
+## Simple or Advanced
 
-## Simple vs Advanced
+They differ in one thing: who sets the tax and how it is divided.
 
-The two modes differ in **one thing: who sets the tax rate and how its
-proceeds are divided.** Everything else on the form is available in both.
+| | Simple | Advanced |
+|---|---|---|
+| Trade fee | **1%** fixed | your own **buy** and **sell** rates, each 0 - 10% |
+| Your half goes to | holders, or one fee address | the wedges below, in shares you set |
+| Everything else on the form | ✓ | ✓ |
 
-**Simple** fixes the trade fee at 1% - 0.5% to you, 0.5% to the platform.
-Your half is paid to your holders as dividends by default; a single fee
-address field redirects it to a wallet instead.
+## The wedges
 
-**Advanced** sets its own rates: separate buy and sell sliders, each up
-to 10%. Your cut divides between:
+An Advanced launch divides the creator's share among these. Each runs
+inside the swap itself; none can be changed after launch by anyone.
 
-- up to **8 payee wallets** with custom shares
-- a **buyback & burn** wedge
-- a **liquidity** wedge
-- **holder dividends**, paid through a payout basket of up to 10 assets
-- a **\$BSTONK basket** wedge - a share routed into the platform vault.
-  **Base only**: \$BSTONK is a Base token and the vault lives there, so
-  on Robinhood Chain this wedge does not exist and your cut divides among
-  the four above.
+| Wedge | Does | Base | Robinhood |
+|---|---|:-:|:-:|
+| **Payees** | up to 8 wallets, custom shares | ✓ | ✓ |
+| **Holder dividends** | every holder paid their share, automatically, in up to 10 assets the creator picked. [Baskets &rarr;](/dividend-baskets) | ✓ | ✓ |
+| **Buyback & burn** | buys the token from its own pool and burns it, in the same transaction as the trade | ✓ | ✓ |
+| **Liquidity** | deepens the pool, raising the floor under later sellers | ✓ | ✓ |
+| **\$BSTONK basket** | a share into the platform vault | ✓ | - |
 
-The rates and the split are fixed at launch and enforced by the pool's
-hook - it is not a promise, it is the contract. Details in [Fees](/fees)
-and [Wedges](/wedges).
+<Note>
+Simple launches get the dividend wedge (and on Base, the \$BSTONK basket wedge) switched on by default at the fixed 1%.
+</Note>
 
-### What both modes have
+## Protections
 
-Everything below is on the form in **Simple as well as Advanced**:
-
-- the **dev buy**, and **[vesting](/vesting)** to lock it
-- the **anti-sniper toll**
-- **holder dividends** and the **payout basket** - Simple simply starts
-  with them switched on - and on Base, the **\$BSTONK basket** share
-- **renounce basket control at launch** (Base only - see below)
-- the **max wallet** cap
-- **B20 mode**, when the pair is a B20 (Base only - B20 is a Coinbase
-  standard issued on Base)
-
-A Simple launch that changes nothing still ships dividends, a basket, and
-a max wallet.
+| Setting | What it does | Limits |
+|---|---|---|
+| **Max wallet** | buys that would breach the cap revert. Sells are never blocked. Creator and pool exempt. | any % |
+| **Anti-sniper toll** | buys in the opening window pay a rate that decays from up to 99% down to your buy tax. Sells never pay it. The token page shows a live meter. | window up to 30 min |
+| **Dev-buy vesting** | locks your dev buy in a vault with a public schedule. [Vesting &rarr;](/vesting) | 7 days minimum, no maximum |
+| **Renounce basket seat** | freezes the payout basket in the launch transaction | Base only - on Robinhood Chain, hand the seat to a burn address after launch |
 
 ## Your own buy
 
-You can buy your own token in the launch transaction itself, so nobody
-front-runs the opening. Two things catch people out:
-
 <Warning>
-**The amount is in the pair token, not dollars.** If your token is priced
-in AAPLc, typing `123` asks for 123 AAPLc - not \$123. Read the symbol
-beside the box and the *≈ % of supply* badge before signing.
+**The amount is in the pair token, not dollars.** Priced in AAPLc, `123` means 123 AAPLc. Read the symbol and the *% of supply* badge before signing.
 </Warning>
 
-- **The cap is 10% of supply.** The **Max** button fills to 9.9%
-  deliberately - the pair price can move between quoting and signing, and
-  a buy that lands over the cap reverts the whole launch.
-- **The buy pays no trade tax** and no anti-sniper toll.
+| | To your wallet | Into a vesting vault |
+|---|---|---|
+| Cap | 10% of supply (**Max** fills to 9.9% - price can move before signing, and over-cap reverts the launch) | none |
+| Trade tax and toll | not paid | not paid |
+| Disclosure | the amount | the amount and the schedule, on-chain at birth |
 
-If you do not hold enough of the pair token, the form offers to swap into
-it in the same flow - and for WETH pairs it simply wraps your ETH.
-
-## Lock your dev buy
-
-The dev buy can go into a **vesting vault** instead of your wallet: 7,
-30, 90 or 365 days from the presets, or any duration from 7 days up, with
-an optional cliff. The schedule is published on-chain in the launch
-transaction itself, so every buyer can read exactly what is locked and
-until when. It can be extended later, never shortened.
-
-The honest trade: a vested dev buy is **uncapped** - the 10% cap applies
-only to the unvested path. The disclosure is the schedule, published at
-birth. Full mechanics in [Vesting](/vesting).
-
-## The anti-sniper toll
-
-A launch can arm a decaying toll on its first minutes: pick a window up
-to 30 minutes, and buys inside it pay a rate starting at 99% and falling
-to your buy tax by the window's end. Sells never pay the toll.
-
-The token page shows a live meter while the toll runs - the current rate
-and the countdown - so a human buying early sees exactly what they would
-pay. The meter is the difference between a protection and a trap.
-
-## Freeze the basket at launch
-
-The payout basket normally comes with a **controller seat**: the creator
-can re-weight or swap its assets later (never the percentage of volume -
-that is immutable). Ticking **renounce basket control at launch** burns
-that seat in the launch transaction, so the basket the launch declared is
-the basket forever. Details in [Dividend baskets](/dividend-baskets).
-
-On Robinhood Chain the creator holds the seat from launch and can
-re-weight or hand it on, but the tick is not on the form: the Robinhood
-launch tuple has no renounce field. To freeze a basket there, hand the
-seat to a burn address after launch.
+Short of the pair token? The form swaps into it in the same flow; WETH pairs just wrap your ETH.
 
 ## After launch
 
-- The **fee address can be handed over** - a token outlives the wallet
-  that launched it.
-- **Artwork and description** can be updated by whoever holds the
-  controller seat - the creator at first, the community after a
-  [takeover](/cto).
-- The **basket's composition** can be re-tuned by its controller, unless
-  the seat was renounced.
-- Nothing else can change. The tax rates, the split, the supply and the
-  pool are immutable, and there is no admin over a live pool.
-
-## Further reading
+| Can change | Cannot change |
+|---|---|
+| Fee address (hand it over) | Tax rates and the split |
+| Artwork and description (whoever holds the controller seat) | Supply |
+| Basket composition (its controller, unless renounced) | The pool - no admin exists |
 
 <AccordionGroup>
-
-<Accordion title="How the opening price is derived from your market cap">
-
-You give a market cap; the pool needs a price. With a fixed supply $S$ and
-a pair token worth $P_{\text{pair}}$ dollars:
-
-$$
-p_0 = \frac{M}{S \cdot P_{\text{pair}}}
-$$
-
-which Uniswap v4 stores as a square root in Q64.96 fixed point:
-
-$$
-\sqrt{P}_{X96} = \sqrt{p_0} \cdot 2^{96}
-$$
-
-The launcher then opens a one-sided position from $p_0$ upward, so the
-first buyer is the first person to move the price - there is no pre-filled
-bid to sell into.
-
-The price the conversion uses is read **at execution time**, on-chain:
-from the pair's Chainlink feed, from a routed price feed walking real
-pools, or from a route the RoutedQuoteGate verified. There is no
-client-side price maths to be wrong - and a feed that cannot answer
-honestly [refuses, rather than guessing](/stock-pairs#routed-feeds-and-why-a-pair-can-go-quiet).
-
+<Accordion title="How the opening price comes from a market cap">
+With supply $S$ and a pair worth $P_{\text{pair}}$ dollars, cap $M$ gives
+$p_0 = M / (S \cdot P_{\text{pair}})$, stored by v4 as $\sqrt{p_0} \cdot 2^{96}$.
+The launcher opens a one-sided position from $p_0$ upward, so the first buyer moves the price first.
+$P_{\text{pair}}$ is read on-chain at execution - Chainlink, a routed feed, or a gate-verified route. A feed that cannot answer honestly refuses rather than guesses.
 </Accordion>
-
-<Accordion title="Why some high-priced pairs have a higher effective minimum">
-
-The launcher materialises an integer count of the pair's smallest unit. For
-a pair with $d$ decimals:
-
-$$
-\text{raw} = \left\lfloor \frac{M}{10^{\,d}\cdot P_{\text{pair}}} \right\rfloor
-$$
-
-and when that floor lands on a small integer, the realised cap steps rather
-than moving smoothly. Against an expensive 8-decimal share the practical
-floor is roughly **ten times the share price**, which is why the form
-refuses some combinations that look valid arithmetically.
-
-The clamp is not cosmetic: it is what stops a launch opening at a price the
-pool cannot actually represent.
-
+<Accordion title="Why high-priced pairs have a higher minimum">
+The launcher materialises an integer count of the pair's smallest unit. Against a \$150 stock, a \$10,000 cap opens near \$8,968, and under about \$1,500 rounds to zero and reverts. The form shows the real opening figure.
 </Accordion>
-
-<Accordion title="The market-cap band, and why it exists">
-
-The create form offers:
-
-$$
-250 \le M \le 15{,}000 \quad \text{(gated pairs)}
-\qquad
-500 \le M \le 10{,}000 \quad \text{(standard)}
-$$
-
-while the V6 contract enforces $100 \le M \le 250{,}000$ on standard
-pairs and the gated band exactly as the form shows it - the form's
-tighter band is the range where the number stays honest.
-
-The upper bound is the interesting one. A creator who could name any
-opening cap would name an enormous one - it costs nothing and puts their
-token at the top of every market-cap sort. The band makes the number
-mean something.
-
+<Accordion title="How a burn wedge moves supply">
+$S_{t+1} = S_t - \dfrac{V \cdot w_{\text{burn}}}{10{,}000 \cdot p_t}$ - the same dollar burns more tokens at a lower price, which is when it matters.
 </Accordion>
-
 </AccordionGroup>
