@@ -4,14 +4,16 @@ description: "The five-step recipe: read the record, build the key, quote with t
 icon: "robot"
 ---
 
-This page is the assembly order. The pieces it assembles each live on a
+This page is the assembly order, and it is the same on Base and on
+Robinhood Chain: pick the chain once, read that chain's token record,
+sign against that chain's router. The pieces it assembles each live on a
 reference page - endpoints on the [REST API](/integration/api), contract
-mechanics on the [on-chain page](/integration/onchain), addresses on the
-[contract reference](/integration/contracts).
+mechanics on the [on-chain page](/integration/onchain), addresses for
+both chains on the [contract reference](/integration/contracts).
 
 <Steps>
   <Step title="Read the token's record from the API">
-    `GET /api/launchpad/tokens/{address}?chain=base` gives the pair
+    `GET /api/launchpad/tokens/{address}?chain={chain}` gives the pair
     token, the hook (`curve`), and the tax shape (`buyTaxBps` /
     `sellTaxBps`, or `taxBps` on pre-V6 launches). Respect the
     [rate limits](/integration/api#rate-limits) - one batched call beats

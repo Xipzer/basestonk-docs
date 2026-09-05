@@ -5,10 +5,11 @@ description: "The router, the PoolKey, the launch tuple, the events to watch and
 icon: "link"
 ---
 
-Everything on this page applies on Base mainnet (chain id 8453) and, with
-the differences called out where they occur, on Robinhood Chain (4663),
-against the contracts on the [contract reference](/integration/contracts).
-If you
+Everything on this page applies on **both chains** - Base (8453) and
+Robinhood Chain (4663) - against that chain's contracts on the
+[contract reference](/integration/contracts). The PoolManager, the router,
+the PoolKey shape, the events and the reverts are the same; where the two
+differ it is called out where it occurs. If you
 only need indexed data - prices, candles, holders - use the
 [REST API](/integration/api) instead; it has already done the v4
 accounting. This page is for code that signs transactions or reads the
@@ -181,10 +182,14 @@ token's [API record](/integration/api). From the controller address,
 three calls:
 
 ```solidity
-// HolderRewards - the token's dividend distributor
+// HolderRewards (Base) - the token's dividend distributor
 function setBasket(address[] tokens, uint16[] weights) external  // rebuild the basket
 function transferBasketControl(address to) external              // hand the seat over
 function renounceBasket() external                               // burn it, forever
+
+// RhHolderRewards (Robinhood Chain) - same seat, two calls
+function setBasket((address asset, uint16 weightBps)[] slots) external
+function setController(address c) external   // hand it over; to a burn address to freeze
 ```
 
 What `setBasket` enforces: one to ten slots, weights summing to exactly

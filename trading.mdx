@@ -5,18 +5,21 @@ icon: "arrow-right-arrow-left"
 ---
 
 Trading on BaseStonk is wallet-to-pool through a router that custodies
-nothing. There is no deposit and no account.
+nothing. There is no deposit and no account. It works the same way on
+Base and on Robinhood Chain; the header's chain switch decides which
+tokens you see and which network the wallet signs on.
 
 ## Pay with whatever you hold
 
-On crypto-paired tokens the trade panel accepts **ETH, WETH or USDC**
-directly: it routes your asset into the token's pair through an
-aggregator, then completes the pool swap - one flow, one confirmation.
+On crypto-paired tokens the trade panel accepts **ETH, WETH or USDC** on
+Base, and **ETH, WETH or USDG** on Robinhood Chain, directly: it routes
+your asset into the token's pair through an aggregator, then completes the
+pool swap - one flow, one confirmation.
 
-Most stock-paired tokens route from ETH the same way. The exception is
-the handful of Coinbase B20 stocks with no on-chain market yet - for
-those you must hold the stock already, and the panel says so rather than
-failing. See [stock pairs](/stock-pairs).
+Most stock-paired tokens route from ETH the same way, on either chain.
+The exception is the handful of Coinbase B20 stocks on Base with no
+on-chain market yet - for those you must hold the stock already, and the
+panel says so rather than failing. See [stock pairs](/stock-pairs).
 
 ## Charts and data
 
@@ -27,8 +30,9 @@ chain - the same numbers the [public API](/integration/api) serves.
 ## Fees you pay when trading
 
 The token's launch-time tax (see [Fees](/fees)) is taken inside the swap -
-buy and sell rates independently, on V6 launches. The interface shows the
-token's rates on its page - there are no other platform charges on top.
+buy and sell rates independently, on V6 launches and on every Robinhood
+Chain launch. The interface shows the token's rates on its page - there
+are no other platform charges on top.
 
 ## Further reading
 

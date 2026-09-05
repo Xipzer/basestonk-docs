@@ -5,14 +5,19 @@ description: "Pick up to ten assets at launch, and your holders are paid in them
 ---
 
 A BaseStonk launch can pay its holders in **up to ten assets of the
-creator's choosing** - NVIDIA, gold ETFs, cbBTC, \$BSTONK, agent tokens,
+creator's choosing** - on Base, NVIDIA, gold ETFs, cbBTC, \$BSTONK, agent
+tokens; on Robinhood Chain, any of the 194 Robinhood stocks, USDG or WETH -
 any mix at once. Most launchpads pay rewards in whatever the token trades
 against, or not at all.
+
+The mechanism is the same contract family on both chains. What differs is
+the menu: each chain's basket draws from the pairs that chain admits.
 
 ## How it works
 
 1. **The creator picks the basket at launch** - up to ten assets with
-   weights, from a menu of several hundred.
+   weights, from a menu of several hundred on Base or the admitted
+   Robinhood pairs on Robinhood Chain.
 2. **A share of every trade flows into the basket.**
 3. **The contracts buy the assets on-chain** - through real markets,
    with a price floor so holders can never be quietly shortchanged. No
@@ -90,14 +95,16 @@ readable state - is on the
   smaller, rather than accepted badly.
 - An empty basket just means classic behaviour - dividends in the pair.
 - If the controller seat is still live, the payout mix can change. Anyone
-  can check on-chain whether the seat has been renounced.
+  can check on-chain whether the seat has been renounced (Base) or handed
+  to a burn address (Robinhood Chain, which has no renounce-at-launch
+  field - the creator holds the seat from launch).
 
 ## Where to see it
 
 Any token whose card carries the **BASKET REWARDS** tag pays a basket. Its token page shows the designated assets and weights, each holder's running totals per asset, and a breakdown of what has been received and what is waiting.
 
 <Note>
-The platform's own token participates too: launches can route a share of their rewards into the \$BSTONK basket vault - a portfolio paid out to \$BSTONK holders as the assets themselves.
+On Base, the platform's own token participates too: launches can route a share of their rewards into the \$BSTONK basket vault - a portfolio paid out to \$BSTONK holders as the assets themselves. This wedge is Base-only; \$BSTONK does not exist on Robinhood Chain. [Why &rarr;](/chains#where-the-platforms-cut-goes)
 </Note>
 
 ## Further reading

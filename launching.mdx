@@ -8,6 +8,12 @@ Every launch mints a fixed supply of **1,000,000,000 tokens** and opens a
 Uniswap v4 pool seeded with 99% of it. The pair you pick is what your
 chart is quoted in forever.
 
+This page is the same on **Base** and on **Robinhood Chain**. Where the
+two differ - what a token can be priced in, and one wedge that exists on
+Base only - it is marked where it occurs. Pick the chain on the form's
+first step; everything after it follows that choice.
+[The full comparison &rarr;](/chains)
+
 ## What happens when you sign
 
 One transaction does all of it:
@@ -22,9 +28,10 @@ One transaction does all of it:
 
 <Warning>
   Opening market caps run \$500 to \$10,000 for standard pairs and \$250
-  to \$15,000 for gated ecosystem pairs. On some stock pairs, very low
-  caps are refused - the form warns you and shows the exact opening
-  price before you sign.
+  to \$15,000 for gated ecosystem pairs on Base, and \$250 to \$15,000
+  for every pair on Robinhood Chain. On some stock pairs, very low caps
+  are refused - the form warns you and shows the exact opening price
+  before you sign.
 </Warning>
 
 ## Simple vs Advanced
@@ -43,7 +50,10 @@ to 10%. Your cut divides between:
 - a **buyback & burn** wedge
 - a **liquidity** wedge
 - **holder dividends**, paid through a payout basket of up to 10 assets
-- a **\$BSTONK basket** wedge - a share routed into the platform vault
+- a **\$BSTONK basket** wedge - a share routed into the platform vault.
+  **Base only**: \$BSTONK is a Base token and the vault lives there, so
+  on Robinhood Chain this wedge does not exist and your cut divides among
+  the four above.
 
 The rates and the split are fixed at launch and enforced by the pool's
 hook - it is not a promise, it is the contract. Details in [Fees](/fees)
@@ -55,11 +65,12 @@ Everything below is on the form in **Simple as well as Advanced**:
 
 - the **dev buy**, and **[vesting](/vesting)** to lock it
 - the **anti-sniper toll**
-- **holder dividends**, the **payout basket**, and the **\$BSTONK
-  basket** share - Simple simply starts with them switched on
-- **renounce basket control at launch**
+- **holder dividends** and the **payout basket** - Simple simply starts
+  with them switched on - and on Base, the **\$BSTONK basket** share
+- **renounce basket control at launch** (Base only - see below)
 - the **max wallet** cap
-- **B20 mode**, when the pair is a B20
+- **B20 mode**, when the pair is a B20 (Base only - B20 is a Coinbase
+  standard issued on Base)
 
 A Simple launch that changes nothing still ships dividends, a basket, and
 a max wallet.
@@ -112,6 +123,11 @@ can re-weight or swap its assets later (never the percentage of volume -
 that is immutable). Ticking **renounce basket control at launch** burns
 that seat in the launch transaction, so the basket the launch declared is
 the basket forever. Details in [Dividend baskets](/dividend-baskets).
+
+On Robinhood Chain the creator holds the seat from launch and can
+re-weight or hand it on, but the tick is not on the form: the Robinhood
+launch tuple has no renounce field. To freeze a basket there, hand the
+seat to a burn address after launch.
 
 ## After launch
 

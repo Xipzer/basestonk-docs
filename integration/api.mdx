@@ -6,8 +6,26 @@ icon: "server"
 
 Base URL: `https://api.basestonk.io`
 
-The API serves what BaseStonk's own interface reads. It currently
-requires no key and no authentication for reads. BaseStonk pools are
+The API serves what BaseStonk's own interface reads, for **both chains
+the venue runs on**. It currently requires no key and no authentication
+for reads.
+
+## The chain
+
+Every read is scoped to one chain, named as `{chain}`:
+
+| `{chain}` | Chain id | Explorer |
+|---|---|---|
+| `base` | 8453 | Basescan |
+| `robinhood` | 4663 | Blockscout |
+
+It travels as `?chain=` on token and wallet routes and as a path segment
+on venue routes, and the examples below write it as `{chain}` throughout.
+A token asked for on the wrong chain is `404`, never served from the other
+index; anything else is `400 unknown chain`. A few endpoints exist on one
+chain only, because the thing they describe does - each is marked.
+Cumulative figures across both chains are on the
+[stats endpoint](#venue-stats). BaseStonk pools are
 Uniswap v4 pools, so raw-chain integrations that assume v2/v3 pair
 contracts will read \$0 liquidity - the API has already done the v4
 accounting for you.
@@ -128,16 +146,10 @@ still carries the rate for pre-V6 launches whose `buyTaxBps` and
 
 ## Endpoints
 
-Every endpoint that takes `chain` accepts `base` (8453) or `robinhood`
-(4663), and answers only for that chain - a Robinhood token asked for on
-Base is not found, not served from the other index. The examples below
-say `base`; substitute `robinhood` for the other venue. Cumulative
-figures across both chains are on the [stats endpoint](#venue-stats).
-
 ### List every token
 
 ```bash
-GET /api/launchpad/tokens?chain=base
+GET /api/launchpad/tokens?chain={chain}
 ```
 
 Returns every launch with pair, hook, price, market cap, volume, holder
@@ -154,13 +166,13 @@ treat that value as both directions.
 ### One token
 
 ```bash
-GET /api/launchpad/tokens/{address}?chain=base
+GET /api/launchpad/tokens/{address}?chain={chain}
 ```
 
 ### Candles
 
 ```bash
-GET /api/launchpad/tokens/{address}/candles?interval=1m&chain=base
+GET /api/launchpad/tokens/{address}/candles?interval=1m&chain={chain}
 ```
 
 Intervals: `1s`, `5s`, `15s`, `1m`, `5m`, `15m`, `1h`. Omitting the
@@ -170,7 +182,7 @@ parameter defaults to `5m`; an unknown value returns
 ### Trades
 
 ```bash
-GET /api/launchpad/tokens/{address}/trades?chain=base
+GET /api/launchpad/tokens/{address}/trades?chain={chain}
 ```
 
 Takes `limit` and `offset`.
@@ -178,7 +190,7 @@ Takes `limit` and `offset`.
 ### Holders
 
 ```bash
-GET /api/launchpad/tokens/{address}/holders?chain=base
+GET /api/launchpad/tokens/{address}/holders?chain={chain}
 ```
 
 Takes `limit` and `offset`.
@@ -186,7 +198,7 @@ Takes `limit` and `offset`.
 ### A wallet's dividends on a token
 
 ```bash
-GET /api/launchpad/tokens/{address}/rewards/{wallet}?chain=base
+GET /api/launchpad/tokens/{address}/rewards/{wallet}?chain={chain}
 ```
 
 Received so far, plus the live pending amount from the distributor.
@@ -194,7 +206,7 @@ Received so far, plus the live pending amount from the distributor.
 ### A wallet's holdings
 
 ```bash
-GET /api/launchpad/holders/{address}/tokens?chain=base
+GET /api/launchpad/holders/{address}/tokens?chain={chain}
 ```
 
 Every BaseStonk token the wallet holds.
@@ -202,7 +214,7 @@ Every BaseStonk token the wallet holds.
 ### A creator's launches
 
 ```bash
-GET /api/launchpad/creators/{address}/tokens?chain=base
+GET /api/launchpad/creators/{address}/tokens?chain={chain}
 ```
 
 ### Burn totals
@@ -211,10 +223,12 @@ GET /api/launchpad/creators/{address}/tokens?chain=base
 GET /api/launchpad/burn/base
 ```
 
+Base only: \$BSTONK and its burn are Base contracts.
+
 ### Pair prices in USD
 
 ```bash
-GET /api/launchpad/pairusd/base?pair=0x…
+GET /api/launchpad/pairusd/{chain}?pair=0x…
 ```
 
 ### Basket assets
@@ -222,6 +236,10 @@ GET /api/launchpad/pairusd/base?pair=0x…
 ```bash
 GET /api/launchpad/basket-assets/base
 ```
+
+Base only - the gated basket menu is Base's ecosystem catalogues. On
+Robinhood Chain a basket draws from the admitted pairs, which
+`paircheck/robinhood` and `pairusd/robinhood` answer for.
 
 The basket-eligible menu, in one call. The response has two halves:
 
@@ -243,13 +261,14 @@ The basket-eligible menu, in one call. The response has two halves:
 ### The ecosystem catalogue
 
 ```bash
-GET /api/launchpad/ecosystem/base
+GET /api/launchpad/ecosystem/{chain}
 ```
 
-The admitted ecosystem tokens - what a gated launch can pair with.
-Parameters: `eco` (`clanker`, `virtuals`, `bankr`) to browse one
-catalogue ranked by market cap, `q` to search all of them (name, symbol,
-or a pasted address), `limit`, `offset`. One of `eco` or `q` is
+The chain's pair catalogue. On Base, the admitted ecosystem tokens a
+gated launch can pair with, browsable by `eco` (`clanker`, `virtuals`,
+`bankr`); on Robinhood Chain, the 194 Robinhood Stock Tokens, where `eco`
+does not apply. `q` searches by name, symbol or a pasted address on
+either; `limit`, `offset` page. One of `eco` or `q` is
 required. A `q` search costs 5 extra units - see
 [rate limits](#rate-limits).
 
@@ -259,6 +278,10 @@ required. A `q` search costs 5 extra units - see
 GET /api/launchpad/gatedroute/base?pair=0x…
 ```
 
+Base only: the gated leg is how Base prices an ecosystem pair with no
+feed. Robinhood Chain pairs are all priced by `RhPairRegistry` and have
+no gated leg.
+
 Returns the gate-verified route, `issuerFactory` and `usdPerPair` for a
 gated pair - what an integrator passes to `launchGated` on the
 [on-chain page](/integration/onchain#launching-programmatically).
@@ -266,8 +289,7 @@ gated pair - what an integrator passes to `launchGated` on the
 ### Venue stats
 
 ```bash
-GET /api/launchpad/stats/base
-GET /api/launchpad/stats/robinhood
+GET /api/launchpad/stats/{chain}
 ```
 
 Totals for that chain - tokens, trades, volume, holders - plus a `venue`
