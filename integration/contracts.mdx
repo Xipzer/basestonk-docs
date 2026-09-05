@@ -1,13 +1,15 @@
 ---
 title: "Contract reference"
-description: "Every address, source-verified on Basescan."
+description: "Every address on both chains, source-verified."
 icon: "file-contract"
 ---
 
-All BaseStonk contracts are deployed on **Base mainnet (chain id 8453)**
-and source-verified - each link opens directly at the verified code.
+BaseStonk is deployed on **Base mainnet (chain id 8453)** and on
+**Robinhood Chain (chain id 4663)**. Every contract on both is
+source-verified - each link opens directly at the verified code. Base
+first; [Robinhood Chain is below](#robinhood-chain-4663).
 
-## Current (V6)
+## Base - current (V6)
 
 Addresses here are read from the live deployment and every one is
 source-verified on Basescan. The V6 stack deployed at blocks
@@ -103,9 +105,58 @@ rather than assuming, and any launcher proves its own hook through
 |---|---|
 | Uniswap v4 PoolManager | [`0x498581fF718922c3f8e6A244956aF099B2652b2b`](https://basescan.org/address/0x498581fF718922c3f8e6A244956aF099B2652b2b#code) |
 
+## Robinhood Chain (4663)
+
+Deployed 2026-09-04. Every address is source-verified on
+[Blockscout](https://robinhoodchain.blockscout.com) - each link opens at
+the verified code. The launcher is a different contract from Base's V6
+(`RhLauncher`), built for the chain's pricing model; the fee hook is the
+same `AdvancedFeeHookV6` with the same permissions.
+
+| Contract | Address |
+|---|---|
+| RhLauncher | [`0x302BdDA741dff12c298F68eDc67b4fA830a1f6A4`](https://robinhoodchain.blockscout.com/address/0x302BdDA741dff12c298F68eDc67b4fA830a1f6A4?tab=contract) |
+| AdvancedFeeHookV6 | [`0xF42bC6ca0D082D3Af51771392CeC847a01A6e044`](https://robinhoodchain.blockscout.com/address/0xF42bC6ca0D082D3Af51771392CeC847a01A6e044?tab=contract) |
+| RhPairRegistry | [`0x50264dFd44d6E0272b107F9dfcc226E4A1cc41fF`](https://robinhoodchain.blockscout.com/address/0x50264dFd44d6E0272b107F9dfcc226E4A1cc41fF?tab=contract) |
+| RhHolderRewardsFactory | [`0x5B64396036c94E1Bfb3F4Ed57b2B959d558D997C`](https://robinhoodchain.blockscout.com/address/0x5B64396036c94E1Bfb3F4Ed57b2B959d558D997C?tab=contract) |
+| LaunchVestingFactory | [`0xeFc8176A284e9fa3C0D5103716B5cdBb90497802`](https://robinhoodchain.blockscout.com/address/0xeFc8176A284e9fa3C0D5103716B5cdBb90497802?tab=contract) |
+| LaunchControl | [`0x5F310e9825850A67C3B79b233a9ba4979Ee74C8D`](https://robinhoodchain.blockscout.com/address/0x5F310e9825850A67C3B79b233a9ba4979Ee74C8D?tab=contract) |
+| SwapRouter | [`0x6A10c4117D37FaaDf429c36522A756Ee9435874f`](https://robinhoodchain.blockscout.com/address/0x6A10c4117D37FaaDf429c36522A756Ee9435874f?tab=contract) |
+| RhFeeVault | [`0x618D78262a8dDE229A088C41C0bFf440aC79D267`](https://robinhoodchain.blockscout.com/address/0x618D78262a8dDE229A088C41C0bFf440aC79D267?tab=contract) |
+
+`RhPairRegistry` is what admits and prices a pair - the
+[depth gate](/chains#robinhood-stock-tokens-as-pairs) lives there.
+`RhFeeVault` is where the platform's cut is held as USDG. There is no
+basket vault, no gate lens and no routed quote gate on this chain, because
+the things they serve on Base do not exist here.
+
+### Linked libraries
+
+| Library | Address |
+|---|---|
+| LaunchOpening | [`0x9d2A32F2883DA90d4D9e41332d6a633b4aE3a1A7`](https://robinhoodchain.blockscout.com/address/0x9d2A32F2883DA90d4D9e41332d6a633b4aE3a1A7?tab=contract) |
+| RhDepth | [`0xA6090C34c1b2617f03F5b979434221F009339D97`](https://robinhoodchain.blockscout.com/address/0xA6090C34c1b2617f03F5b979434221F009339D97?tab=contract) |
+
+### Pair tokens and infrastructure (not ours)
+
+| Contract | Address |
+|---|---|
+| USDG | `0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168` |
+| WETH | `0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73` |
+| Uniswap v4 PoolManager | `0x8366a39CC670B4001A1121B8F6A443A643e40951` |
+| Uniswap v3 factory | `0x1f7d7550B1b028f7571E69A784071F0205FD2EfA` |
+
+Robinhood Stock Tokens are proxies sharing one implementation; the
+registry admits a pair by that proxy's code hash, so the 194 addresses
+are not listed here - ask `RhPairRegistry.isAdmitted(address)`.
+
+Launched tokens and their dividend distributors are `AdvancedLaunchToken`
+and `RhHolderRewards`, verified once each; Blockscout matches every
+later instance by bytecode.
+
 ## Pool parameters
 
-Every BaseStonk pool uses fee `3000` and tick spacing `60`, with the
-launcher's hook installed. The full PoolKey shape, the launch tuple and
+Every BaseStonk pool on either chain uses fee `3000` and tick spacing
+`60`, with that chain's launcher hook installed. The full PoolKey shape, the launch tuple and
 the events each contract emits are on the
 [on-chain page](/integration/onchain).

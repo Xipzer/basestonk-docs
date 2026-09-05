@@ -84,7 +84,7 @@ code, never on message.
 |---|---|---|---|
 | `invalid_request` | `400` | a malformed address, interval or parameter | correct it; do not retry unchanged |
 | `validation_failed` | `400` | the body failed schema validation - `detail` names the fields | fix the named fields |
-| `unknown_chain` | `400` | a chain other than `base` | use `base` |
+| `unknown_chain` | `400` | a chain other than `base` or `robinhood` | use one of those |
 | `unauthorized` | `401` | the signature is absent, expired, or already used | sign and mint a fresh session |
 | `forbidden` | `403` | the bearer lacks the scope, or the creator is not the bearer's wallet | sign the right `action`; launch as yourself |
 | `not_found` | `404` | no row for that identifier | verify it; do not loop on an unchanged 404 |

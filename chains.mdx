@@ -1,0 +1,109 @@
+---
+title: "Chains"
+description: "BaseStonk runs on Base and on Robinhood Chain. What is the same, what is different, and why."
+icon: "layer-group"
+---
+
+BaseStonk is one venue on two chains. A launch is a live Uniswap v4 pool
+from its first block on both; the fee hook, the launcher's no-custody
+rule and the holder-dividend mechanics are the same contracts on both.
+What differs is what a token can be priced in, and where the platform's
+cut goes.
+
+| | Base | Robinhood Chain |
+|---|---|---|
+| Chain id | 8453 | 4663 |
+| Native gas | ETH | ETH |
+| Explorer | Basescan | Blockscout |
+| Pair tokens | USDC, USDT, WETH, cbBTC, VIRTUAL, AERO, tokenized stocks, ecosystem tokens, \$BSTONK | **USDG**, WETH, and **194 Robinhood Stock Tokens** |
+| Opening market cap | \$250 - \$15,000, set on the form | the same |
+| Fee hook | AdvancedFeeHookV6 | AdvancedFeeHookV6, same permissions |
+| Holder dividends | yes | yes |
+| Split buy / sell tax, dev-buy vesting, anti-sniper toll | yes | yes |
+| \$BSTONK basket seat | yes | **no** - see below |
+| Platform cut | converted to \$BSTONK and burnt | **converted to USDG and held** - see below |
+| Community takeover | yes | yes |
+
+Switch chains from the header. The token list, the create form and your
+portfolio follow it, and a wallet on the wrong network is asked to switch
+before it can sign.
+
+## Robinhood Stock Tokens as pairs
+
+Robinhood issues 194 tokenized equities and ETFs on its chain - NVIDIA,
+Apple, Tesla, the S&P 500, and so on - and every one of them is
+launchable against, subject to one gate.
+
+<Note>
+**Admission is a predicate, not a list.** A pair is admitted if it is a
+genuine Robinhood Stock Token - the registry checks the issuer's proxy
+bytecode and a non-zero supply - or USDG or WETH. There is no allowlist to
+be on. A ticker Robinhood issues tomorrow is launchable the moment it has
+supply.
+</Note>
+
+The gate is depth. Before a launch opens, the registry measures the cost
+of pushing the pair's own price down ten times through its deepest
+market, and refuses any pair where that costs under **\$1,000**. It is a
+test of whether the pair's market is real, not of whether the price is
+precise: the failure the gate exists to prevent is a launch opening at a
+market cap that was never there. At today's depth roughly half of the 194
+clear it, and the create form only offers the ones that do.
+
+Pricing comes from Chainlink where a feed exists and from the pair's own
+market otherwise, read at the moment you sign. Never typed in.
+
+## Where the platform's cut goes
+
+On Base, the platform's share of every trade is converted to \$BSTONK
+and burnt - the [second flywheel](/bstonk).
+
+On Robinhood Chain it is not. **The platform's cut converts to USDG and
+is held in the venue's fee vault on 4663.** Nothing bridges to Base
+automatically, and \$BSTONK does not exist on Robinhood Chain. This is a
+deliberate choice, not a gap waiting to be closed: \$BSTONK stays a Base
+token, and moving value between chains is a decision the operator makes
+by hand, never a pipe.
+
+Two things follow for a launch on Robinhood Chain:
+
+- **There is no \$BSTONK basket seat.** The slice of the creator's half
+  that on Base feeds the platform basket does not exist here. A creator's
+  half goes to their payees and to holder dividends, and that is the whole
+  split.
+- **Holder dividends are paid in the pair.** A token paired with USDG
+  pays holders in USDG; a token paired with NVDA pays in NVDA. The
+  [dividend basket](/dividend-baskets) can route them into other
+  Robinhood assets, as on Base.
+
+## Fees
+
+Identical arithmetic. The platform takes `min(half the trade's rate, 1%)`
+and the creator controls the rest - see [Fees](/fees). The only
+difference is the destination of the platform's share, above.
+
+## For builders
+
+The REST API takes `chain=robinhood` wherever it takes `chain=base`;
+every indexed surface - tokens, candles, trades, holders, rewards, stats -
+answers for both. The [contract reference](/integration/contracts) lists
+the Robinhood Chain addresses, and the [on-chain page](/integration/onchain)
+carries the launch tuple, which is narrower than Base's V6 tuple in one
+respect: it has no `vaultShareBps`, `issuers` or `renounceBasket`,
+because the basket seat it would describe does not exist there.
+
+<Warning>
+Robinhood Chain produces a block every **0.1 seconds** - roughly forty
+times Base's rate. An indexer that scans by block range will see
+864,000 blocks a day. Filter `eth_getLogs` by address or topic; a wide
+unfiltered range is refused by every public endpoint on the chain.
+</Warning>
+
+## What is not on Robinhood Chain
+
+- \$BSTONK, its buyback, and the platform basket vault. These are Base.
+- Referral links. A referral is created by holding USDC on Base, and
+  pays out there.
+- B20 mode. B20 tokens are a Coinbase standard issued on Base.
+- The Clanker, Virtuals and Bankr ecosystem pairs. Those catalogues are
+  Base-native; Robinhood Chain's equivalent rail is the 194 equities.

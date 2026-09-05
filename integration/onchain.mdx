@@ -5,8 +5,10 @@ description: "The router, the PoolKey, the launch tuple, the events to watch and
 icon: "link"
 ---
 
-Everything on this page happens on Base mainnet (chain id 8453), against
-the contracts on the [contract reference](/integration/contracts). If you
+Everything on this page applies on Base mainnet (chain id 8453) and, with
+the differences called out where they occur, on Robinhood Chain (4663),
+against the contracts on the [contract reference](/integration/contracts).
+If you
 only need indexed data - prices, candles, holders - use the
 [REST API](/integration/api) instead; it has already done the v4
 accounting. This page is for code that signs transactions or reads the
@@ -133,6 +135,34 @@ Basket assets in the launch tuple must pass the RoutedQuoteGate's
 `basket.issuers` for ecosystem tokens) - the rewards factory refuses the
 launch otherwise. The whole eligible menu is one call:
 [the basket-assets endpoint](/integration/api#basket-assets).
+
+### Robinhood Chain
+
+`RhLauncher.launch(LaunchParams p, Payee[] payees)` takes the tuple above
+with one difference - the basket is narrower, because there is no
+\$BSTONK basket seat on that chain:
+
+```solidity
+struct PayoutBasket {       // RhLauncher
+    address[] tokens;
+    uint16[]  weights;
+}
+```
+
+No `issuers`, no `vaultShareBps`, no `renounceBasket`. Every other field
+is the same, in the same order, and the salt is bound to `msg.sender` the
+same way. The token's creation code differs (it is built under a different
+compiler profile), so a salt mined against Base's `AdvancedLaunchToken`
+bytecode predicts an address the Robinhood launcher will never create and
+reverts `TokenMustSortBelowPair` - mine against the 4663 build.
+
+`marketCapUsd` is bounded \$250 - \$15,000. Every basket asset must pass
+`RhPairRegistry.isAdmitted`, the same predicate that admits the pair.
+
+The launcher emits `AdvancedLaunched(token, creator, poolId, pairToken,
+sqrtPriceX96, buyTaxBps, sellTaxBps, burnBps, liquidityBps, payees)` and
+`RewardsEnabled(token, distributor, rewardsBps)` - the same events as
+Base, so one decoder serves both chains.
 
 Two constraints the launcher enforces on the new fields: a nonzero
 `vestDuration` requires a nonzero `buyPair` (`VestRequiresDevBuy`), and a

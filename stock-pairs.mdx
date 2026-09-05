@@ -8,9 +8,9 @@ Pair a launch with a tokenized equity and your token is quoted in shares
 of it. The chart moves with the stock, and the opening price is read from
 a live on-chain feed at the moment you sign.
 
-## Two kinds of stock token
+## Three kinds of stock token
 
-<CardGroup cols={2}>
+<CardGroup cols={3}>
   <Card title="Coinbase B20 stocks" icon="building-columns">
     NVDAc, COINc and friends - issued in the Coinbase app as chain-native
     B20 tokens. Four are issued on-chain - NVDAc, GOOGLc, AAPLc, METAc -
@@ -25,6 +25,14 @@ a live on-chain feed at the moment you sign.
     **Chainlink equity feeds:** wtCOIN, wtNVDA, wtMSTR, wtSPCX. **Routed
     price feeds**, for the ETFs and foreign listings Chainlink does not
     cover: wtSGOV, wtSKHY, wtSPYM, wtDRAM, wtQQQM, wtIAU, wtCEG.
+  </Card>
+  <Card title="Robinhood Stock Tokens" icon="building">
+    On **Robinhood Chain**, 194 equities and ETFs issued by Robinhood
+    itself - NVDA, AAPL, TSLA, SPY and the rest. Admitted by what they
+    are, not by a list: a genuine Robinhood-issued token with supply is
+    launchable. Priced by Chainlink where a feed exists and by the
+    token's own market otherwise, behind a depth gate that refuses any
+    pair too thin to price honestly. [Chains &rarr;](/chains)
   </Card>
 </CardGroup>
 

@@ -77,7 +77,7 @@ Every error is JSON with a single `error` field. Branch on the status;
 
 | Status | Body | When | What to do |
 |---|---|---|---|
-| `400` | `{"error":"unknown chain"}` | a chain other than `base` | use `base` |
+| `400` | `{"error":"unknown chain"}` | a chain other than `base` or `robinhood` | use one of those |
 | `400` | `{"error":"invalid address"}` | not `0x` + 40 hex | fix the address; do not retry unchanged |
 | `400` | `{"error":"bad interval"}` | an interval not in the candles list | pick from the list |
 | `400` | `{"error":{...}}` | validation failed - the object names the fields | fix the named fields |
@@ -127,6 +127,12 @@ still carries the rate for pre-V6 launches whose `buyTaxBps` and
 `sellTaxBps` are null.
 
 ## Endpoints
+
+Every endpoint that takes `chain` accepts `base` (8453) or `robinhood`
+(4663), and answers only for that chain - a Robinhood token asked for on
+Base is not found, not served from the other index. The examples below
+say `base`; substitute `robinhood` for the other venue. Cumulative
+figures across both chains are on the [stats endpoint](#venue-stats).
 
 ### List every token
 
@@ -261,6 +267,12 @@ gated pair - what an integrator passes to `launchGated` on the
 
 ```bash
 GET /api/launchpad/stats/base
+GET /api/launchpad/stats/robinhood
 ```
 
-Totals across the venue: tokens, trades, volume, holders.
+Totals for that chain - tokens, trades, volume, holders - plus a `venue`
+block carrying the same figures **summed across both chains**, so one
+request answers "how big is BaseStonk" without asking each chain and
+adding. `venue.aggregated` names which fields are sums; \$BSTONK's burn
+total is deliberately not among them, because there is one \$BSTONK and
+it is on Base.

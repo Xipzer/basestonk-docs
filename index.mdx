@@ -1,15 +1,16 @@
 ---
 title: "What BaseStonk is"
 sidebarTitle: "Overview"
-description: "A launchpad on Base where every token trades in a real Uniswap v4 pool from its first block."
+description: "A launchpad on Base and Robinhood Chain where every token trades in a real Uniswap v4 pool from its first block."
 icon: "rocket"
 ---
 
 <img src="/images/banner-bstonk-coin.webp" alt="BaseStonk" style={{ width: '100%', borderRadius: '14px' }} noZoom />
 
-BaseStonk launches tokens on Base. No bonding curve, no graduation:
-creating a token opens a real Uniswap v4 pool in the same transaction,
-and trading starts immediately.
+BaseStonk launches tokens on **Base** and on **Robinhood Chain**. No
+bonding curve, no graduation: creating a token opens a real Uniswap v4
+pool in the same transaction, and trading starts immediately.
+[What differs between the two chains &rarr;](/chains)
 
 What you see on a BaseStonk chart is a pool price from the first candle -
 not a curve that later migrates somewhere else.
@@ -32,9 +33,11 @@ roughly **\$2.2M of real stock a year**.
 The first is ordinary: a share of its own trading buys and burns it,
 inside the swap.
 
-The second is not. **The platform's cut of every launch on the venue** is
+The second is not. **The platform's cut of every launch on Base** is
 converted to \$BSTONK and burnt, automatically. A token that has nothing
-to do with \$BSTONK still burns \$BSTONK simply by trading.
+to do with \$BSTONK still burns \$BSTONK simply by trading. (On Robinhood
+Chain the platform's cut is held as USDG instead - \$BSTONK is a Base
+token. [Why &rarr;](/chains#where-the-platforms-cut-goes))
 
 <Note>
 **Over 9.6% of supply is already gone** - more than 96 million tokens
@@ -67,7 +70,7 @@ trading, plus a share of the **platform basket vault** - a portfolio of
 
 ## Pick what your token is priced in
 
-Launches choose their quote asset:
+Launches choose their quote asset. On Base:
 
 - **Stables and majors** - USDC, USDT, WETH, cbBTC
 - **Base-native tokens** - VIRTUAL, AERO
@@ -76,6 +79,10 @@ Launches choose their quote asset:
 - **Ecosystem tokens** - any admitted Clanker, Virtuals or Bankr token,
   several hundred pairs
 - **\$BSTONK** - the platform's own token
+
+On Robinhood Chain: **USDG**, **WETH**, and any of the **194 Robinhood
+Stock Tokens** - NVIDIA, Apple, Tesla, the S&P 500 - that clears the
+depth gate.
 
 A stock-paired token's chart moves with the stock. Whatever the pair, the
 opening price is read on-chain at the moment you sign - never typed in,
@@ -92,5 +99,5 @@ the list of powers that do not exist:
 - **We cannot hold your funds.** Trading is wallet-to-pool through a
   router that custodies nothing.
 
-Every contract is source-verified on Basescan - see the
-[contract reference](/integration/contracts).
+Every contract is source-verified - on Basescan for Base, on Blockscout
+for Robinhood Chain. See the [contract reference](/integration/contracts).

@@ -22,7 +22,8 @@
         "group": "Welcome",
         "pages": [
           "index",
-          "quickstart"
+          "quickstart",
+          "chains"
         ]
       },
       {
