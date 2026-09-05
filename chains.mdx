@@ -86,7 +86,10 @@ difference is the destination of the platform's share, above.
 
 The REST API takes `chain=robinhood` wherever it takes `chain=base`;
 every indexed surface - tokens, candles, trades, holders, rewards, stats -
-answers for both. The [contract reference](/integration/contracts) lists
+answers for both. The [agent API](/integration/agents) prepares launches
+and trades on either chain: send `chainId: 4663` in the body and the
+unsigned transaction comes back for `RhLauncher` or the Robinhood router,
+with the same verdict shape. The [contract reference](/integration/contracts) lists
 the Robinhood Chain addresses, and the [on-chain page](/integration/onchain)
 carries the launch tuple, which is narrower than Base's V6 tuple in one
 respect: it has no `vaultShareBps`, `issuers` or `renounceBasket`,

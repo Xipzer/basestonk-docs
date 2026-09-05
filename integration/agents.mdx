@@ -128,7 +128,8 @@ POST /api/v1/agent/session
 ```
 
 The signature is EIP-712 typed data - domain
-`{ name: "BaseStonk", version: "1", chainId: 8453 }`, type
+`{ name: "BaseStonk", version: "1", chainId: 8453 }` (or `4663` if the
+wallet is on Robinhood Chain; the server accepts either), type
 `Authorization { action: string, address: address, expiresAt: uint256, detail: string }` -
 with `detail` empty and `action` = `agent:session` for the read tier or
 `agent:session:prepare` for read + `/prepare`. The scope is part of what
@@ -148,7 +149,11 @@ Rules that will save you a debugging session:
 ## Prepared transactions
 
 Two endpoints assemble, check and simulate a transaction, then hand it to
-you unsigned. Both demand the `prepare` scope. The shared response shape:
+you unsigned. Both demand the `prepare` scope, and both take a `chainId`
+in the body - `8453` for Base, `4663` for Robinhood Chain, absent means
+Base. The response's `tx.chainId` echoes it, and `tx.to` is that chain's
+launcher or router. An unknown `chainId` is a `400` naming the chains
+served, never a silent default. The shared response shape:
 
 ```json
 {
@@ -216,12 +221,21 @@ the live launcher.
   as pair amount, USD, and `percentOfSupplyAtOpen`. A non-zero dev buy
   gets funding and allowance checks and an `approvalTx` when short.
 
-**The pair decides which leg you get, and `intent.leg` names it:**
+**The chain and the pair decide which leg you get, and `intent.leg` names it:**
 
-| `intent.leg` | Pair | Priced by |
-|---|---|---|
-| `direct` | one the oracle registry holds a feed for - USDC, WETH, cbBTC, \$BSTONK, tokenized stocks | the launcher's own registry |
-| `gated` | an ecosystem token with no feed | a route the RoutedQuoteGate re-verifies hop by hop |
+| `intent.leg` | Chain | Pair | Priced by |
+|---|---|---|---|
+| `direct` | Base | one the oracle registry holds a feed for - USDC, WETH, cbBTC, \$BSTONK, tokenized stocks | the launcher's own registry |
+| `gated` | Base | an ecosystem token with no feed | a route the RoutedQuoteGate re-verifies hop by hop |
+| Robinhood | 4663 | USDG, WETH, or any admitted Robinhood Stock Token | `RhPairRegistry` - Chainlink where a feed exists, the pair's own market behind a depth gate otherwise |
+
+On Robinhood Chain the verdict's checks are `pair_admitted`, `checkpoint`
+(a v4-priced pair needs a checkpoint 60-3600s old; if one is missing the
+answer carries the transaction that posts it), `simulated`,
+`gas_estimated` and `dev_buy_denominated`. The tuple has no basket seat -
+`vaultShareBps`, `issuers` and `renounceBasket` are absent - and the
+returned `tx.to` is `RhLauncher`. Measured live: a USDG-paired prepare
+answers `200` with the launch simulated and gas-estimated on 4663.
 
 You do not choose. A gated answer additionally carries `route`,
 `issuerFactory`, `startSqrtPriceX96` and `impliedCapUsd` in the intent;
