@@ -1,0 +1,89 @@
+---
+title: "Holding a token"
+sidebarTitle: "Holding"
+description: "Your dividends, your portfolio, your watchlist, and what the badges on a token mean."
+icon: "wallet"
+---
+
+## Your dividends
+
+Dividends on a token you hold arrive automatically. Every trade on the
+token advances a queue of holders by one or two places, and when the
+queue reaches you, your share is delivered - in the basket's assets, or
+in the pair.
+
+The token page shows your position under **Your dividends**: what you
+have received, what is waiting, and where you are in line as
+*place N of M, about K trades away*.
+
+**Claim now** pays you immediately instead of waiting for the queue. It
+costs gas and is never required. On Base it calls `claim()`; on Robinhood
+Chain, `claimFor(you)`.
+
+<Note>
+Your place in the queue is a fact about the queue, not about your balance. A large holder and a small one are delivered in the same order they were queued.
+</Note>
+
+## Portfolio
+
+[basestonk.io/portfolio](https://basestonk.io/portfolio) reads your
+wallet across both chains.
+
+**Holdings** - every BaseStonk token you hold, its value, weight and 24h
+move, with a *hide dust* toggle for positions under \$1.
+
+**PnL** - entry price, what you still hold, realised and unrealised gain,
+and your return per token. Exportable as CSV.
+
+**Launches** - tokens you created, with market cap, holders and fees
+earned, and a **Manage** button for each.
+
+**Earnings** - dividends received, by source and by asset.
+
+**Claimable** - anything in a basket-vault round waiting for you to pull it.
+
+### Sharing a position
+
+Any position opens a **share card**: a 1200x630 image of the token, your
+entry and your return, with a template you can edit. Download it, copy a
+link that carries your referral code, or post straight to X or Telegram.
+
+## Watchlist
+
+Star any token - in the list, on its page, or in search - and it joins
+your watchlist. The list gets a **Watchlist** filter once you have starred
+anything. Up to 50 tokens, kept in your browser.
+
+## Finding a token
+
+- **Search** - press `/` or `Ctrl`/`Cmd`+`K` anywhere. Trending, new,
+  your watchlist and recent tokens, or paste an address.
+- **By symbol** - `basestonk.io/SYMBOL` or `basestonk.io/tokens/$SYMBOL`
+  resolves to the token: the platform's own first, then the largest by
+  market cap. Impersonators are never resolved this way.
+- **Sort and filter** the list by trending, age, market cap, volume or
+  holders; by pair; by launcher generation; by feature (rewards, buyback,
+  auto-liquidity, simple, advanced, OG, platform).
+- **Add to wallet** - the token page's *Contracts & wallets* sheet adds
+  the token to MetaMask and friends in one click.
+
+## The badges
+
+| Badge | Means |
+|---|---|
+| **OG** | the first launch on this chain to use this ticker. Later launches with the same ticker do not get it. |
+| **⚠ Not the real \$X** | the token's name or ticker imitates a protected asset - USDC, USDT, ETH, WBTC, Circle, BaseStonk itself - including look-alike characters. It is still listed and tradeable; the flag is a statement about the name. |
+| **Priced against a namesake** | the *pair* imitates a well-known ticker, and a deeper market of the same name exists at another address. The token page names the deeper one. |
+| **Creator-chosen pair** | the pair is one the creator nominated, not one BaseStonk curated. [Pairs &rarr;](/stock-pairs#bring-your-own-pair) |
+| **BASKET REWARDS** | this token pays dividends through a basket of assets rather than in its pair alone. |
+| **Anti-sniper toll** (live meter) | the launch's opening window is still running; the current buy rate and the countdown are shown. |
+
+<Warning>
+A ticker is not an identity. Anything BaseStonk deployed traces to a launcher on the [contract reference](/integration/contracts); a scanner flag is explained on [token safety](/token-safety).
+</Warning>
+
+## Settings
+
+The gear in the header: dark or light appearance, language (English,
+简体中文), chart in market cap or price, and **launch alerts** - a chime
+and a notice whenever a new token launches while the site is open.

@@ -63,12 +63,12 @@ Robinhood assets, as on Base.
 
 ## For builders
 
-| | |
-|---|---|
-| REST API | `chain=robinhood` wherever `chain=base` works. [API &rarr;](/integration/api) |
-| Agent API | `chainId: 4663` in the body. [Agents &rarr;](/integration/agents) |
-| Contracts | [Robinhood Chain addresses &rarr;](/integration/contracts#robinhood-chain-4663) |
-| Launch tuple | No `vaultShareBps`, `issuers` or `renounceBasket`. [On-chain &rarr;](/integration/onchain#robinhood-chain) |
+The [REST API](/integration/api) takes `chain=robinhood` wherever it
+takes `chain=base`, and the [agent API](/integration/agents) takes
+`chainId: 4663` in the body. Addresses are on the
+[contract reference](/integration/contracts#robinhood-chain-4663). The
+launch tuple has no `vaultShareBps`, `issuers` or `renounceBasket` -
+[on-chain](/integration/onchain#robinhood-chain).
 
 <Warning>
 Robinhood Chain makes a block every **0.1s** - 864,000 a day. Filter `eth_getLogs` by address or topic; every public endpoint refuses a wide unfiltered range.

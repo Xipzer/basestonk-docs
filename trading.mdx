@@ -22,21 +22,18 @@ panel says so.
 
 ## What you pay
 
-| | |
-|---|---|
-| The token's tax | buy and sell rates set at launch, taken inside the swap. Shown on the token page. |
-| Platform charges on top | none |
-| Price impact | the pool's own curve - split large orders rather than raising slippage |
+The token's tax - buy and sell rates set at launch, shown on its page,
+taken inside the swap. There are no platform charges on top. Price impact
+is the pool's own curve; split a large order rather than raising
+slippage.
 
 ## The sell floor
 
 Every pool opens as single-sided liquidity above the launch price. Two
-things follow, and both are guarantees:
-
-| | |
-|---|---|
-| Nobody can pull the liquidity | the launcher holds nothing after launch; no admin exists over the pool |
-| The launch price is a floor | the pool cannot pay out below the price it opened at - below it there is nothing on the other side |
+guarantees follow. **Nobody can pull the liquidity** - the launcher holds
+nothing after launch and no admin exists over the pool. **The launch
+price is a floor** - the pool cannot pay out below the price it opened
+at, because below it there is nothing on the other side.
 
 ### The one consequence
 

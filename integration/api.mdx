@@ -84,42 +84,119 @@ treat it as both directions.
 
 ### Tokens
 
-| | |
-|---|---|
-| `GET /api/launchpad/tokens?chain={chain}` | every launch: pair, hook, price, cap, volume, holders, tax |
-| `GET /api/launchpad/tokens/{address}?chain={chain}` | one token |
-| `GET /api/launchpad/tokens/{address}/candles?interval=1m&chain={chain}` | `1s` `5s` `15s` `1m` `5m` `15m` `1h`; default `5m` |
-| `GET /api/launchpad/tokens/{address}/trades?chain={chain}` | |
-| `GET /api/launchpad/tokens/{address}/holders?chain={chain}` | |
-| `GET /api/launchpad/tokens/{address}/rewards/{wallet}?chain={chain}` | received so far plus live pending |
+```bash
+GET /api/launchpad/tokens?chain={chain}
+```
 
-`/tokens` filters: `sort` (`trending` `age` `marketcap` `volume` `holders`), `dir`, `q`, `pair`, `generation` (`v1`..`v6` `simple` `b20`), `features`.
+Every launch with pair, hook, price, market cap, volume, holders and tax.
+Filters: `sort` (`trending` `age` `marketcap` `volume` `holders`), `dir`,
+`q`, `pair` (an address, or `crypto` / `memes` / `stocks`), `generation`
+(`v1`..`v6` `simple` `b20`), `features` (comma-separated AND of
+`platform` `og` `rewards` `buyback` `auto-liquidity` `simple` `advanced`),
+`addresses` (up to 50 - a watchlist in one call).
+
+```bash
+GET /api/launchpad/tokens/{address}?chain={chain}
+```
+
+One token. Add `tx=<launch hash>` and a token not yet indexed is indexed
+from that receipt on the spot.
+
+```bash
+GET /api/launchpad/tokens/{address}/candles?chain={chain}&interval=1m
+```
+
+`interval`: `1s` `5s` `15s` `1m` `5m` `15m` `1h` (default `5m`).
+`before=<unix seconds>` pages backwards through history.
+
+```bash
+GET /api/launchpad/tokens/{address}/trades?chain={chain}
+GET /api/launchpad/tokens/{address}/holders?chain={chain}
+GET /api/launchpad/tokens/{address}/pressure?chain={chain}
+```
+
+Trades take `trader=` and `side=`. Holders take `q=` (an address prefix,
+four or more hex characters). Pressure is the momentum panel: buys, sells,
+volume and distinct wallets over 5m / 1h / 4h / 24h.
 
 ### Wallets
 
-| | |
-|---|---|
-| `GET /api/launchpad/holders/{address}/tokens?chain={chain}` | every BaseStonk token the wallet holds |
-| `GET /api/launchpad/creators/{address}/tokens?chain={chain}` | every token it launched |
+```bash
+GET /api/launchpad/holders/{address}/tokens
+GET /api/launchpad/creators/{address}/tokens?chain={chain}
+GET /api/launchpad/wallets/{address}/positions?chain={chain}
+GET /api/launchpad/rewards/{address}?chain={chain}
+GET /api/launchpad/tokens/{token}/rewards/{address}?chain={chain}
+```
+
+Holdings are cross-chain and take no `chain`. Positions are the
+portfolio's PnL rows - entry, holding, realised, unrealised - and take
+`token=` to narrow. Rewards are dividends received across every token, or
+on one token with the live pending amount.
 
 ### Pairs and pricing
 
-| | Chains | |
-|---|---|---|
-| `GET /api/launchpad/pairusd/{chain}?pair=0x…` | both | USD per pair token, from the registry the launcher prices with |
-| `GET /api/launchpad/paircheck/{chain}?pair=0x…` | both | can this address be launched against right now - `hasMarket` needs \$2,500 of depth on Base - and why not |
-| `GET /api/launchpad/ecosystem/{chain}` | both | the chain's pair catalogue - see below |
-| `GET /api/launchpad/basket-assets/base` | Base | the basket-eligible menu: `registered` (curated set, with `category`, `launchable`, `needsIssuance`) plus `ecosystem` (ranked, priced rows; paged) |
-| `GET /api/launchpad/gatedroute/base?pair=0x…` | Base | gate-verified route, `issuerFactory` (zero for a creator-chosen pair), `usdPerPair` - for **any** token address, not only catalogued ones |
+```bash
+GET /api/launchpad/pairusd/{chain}?pair=0x…
+GET /api/launchpad/pairusd-batch/{chain}?pairs=0x…,0x…
+GET /api/launchpad/paircheck/{chain}?pair=0x…
+GET /api/launchpad/pair-identity/{chain}/{address}
+GET /api/launchpad/ecosystem/{chain}
+```
 
-**`/ecosystem`**: on Base, `eco` (`clanker` `virtuals` `bankr`) browses one catalogue, absent browses all three; on Robinhood Chain, the 194 stocks, `eco` not applicable. `q` searches name, symbol or address on either.
+`pairusd` is USD per pair token from the registry the launcher prices
+with; the batch form takes up to 120. `paircheck` answers whether an
+address can be launched against right now - `hasMarket` needs \$2,500 of
+depth on Base - and names any namesake risk. `pair-identity` resolves
+symbol, name and artwork for any address, curated or not.
+
+`ecosystem` is the chain's pair catalogue. On Base, `eco` (`clanker`
+`virtuals` `bankr`) browses one catalogue and absent browses all three;
+on Robinhood Chain it is the 194 stocks. `q` searches name, symbol or
+address.
+
+```bash
+GET /api/launchpad/basket-assets/base
+GET /api/launchpad/gatedroute/base?pair=0x…
+```
+
+Base only. `basket-assets` is the dividend-basket menu - `registered`
+(the curated set, with `category`, `launchable`, `needsIssuance`) plus
+`ecosystem` (ranked, paged). `gatedroute` returns the gate-verified route,
+`issuerFactory` (zero for a creator-chosen pair) and `usdPerPair` for
+**any** address with a market - what `launchGated` takes.
 
 ### Venue
 
-| | Chains | |
-|---|---|---|
-| `GET /api/launchpad/stats/{chain}` | both | that chain's tokens, trades, volume, holders - plus a `venue` block summed across both chains. `venue.aggregated` names the summed fields; \$BSTONK's burn is deliberately not one. |
-| `GET /api/launchpad/burn/base` | Base | \$BSTONK burn totals |
+```bash
+GET /api/launchpad/stats/{chain}
+GET /api/launchpad/burn/base
+GET /api/launchpad/burn/base/history
+```
+
+`stats` is that chain's tokens, trades, volume and holders, plus a
+`venue` block summed across both chains (`venue.aggregated` names the
+summed fields; \$BSTONK's burn is deliberately not one). `burn` is the
+\$BSTONK burn total; `history` is the daily series.
+
+### Live updates
+
+```
+wss://api.basestonk.io/ws
+```
+
+Send `{ "subscribe": ["tokens:new", "token:0x…", "candles:0x…:1m"] }`.
+Events: `token.new`, `token.trade`, `token.touched`, `token.state`. The
+site's list and charts run on this; polling is the fallback.
+
+### Images
+
+```bash
+GET /api/img/{address}?chain={chain}&w=64
+GET /api/card/token/{chain}/{address}.png
+```
+
+Resized token artwork, and the 1200x630 share card the site unfurls.
 
 <Note>
 Eligibility is the chain's word, not this cache's. On-chain vetting and rebuild rules: [on-chain page](/integration/onchain#launching-programmatically).

@@ -33,13 +33,15 @@
           "fees",
           "dividend-baskets",
           "vesting",
-          "stock-pairs"
+          "stock-pairs",
+          "managing"
         ]
       },
       {
         "group": "Trade and earn",
         "pages": [
           "trading",
+          "holding",
           "bstonk",
           "referrals",
           "token-safety"

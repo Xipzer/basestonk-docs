@@ -14,14 +14,16 @@ endpoints that assemble a transaction for **your** key to sign.
 ## `/api/v1`
 
 Every [REST endpoint](/integration/api) is also served under `/api/v1/`
-as a machine contract:
+as a machine contract. Errors are coded -
+`{"error":{"code":"rate_limited","message":"…","retryAfter":21}}`. Lists
+carry `items` and `nextOffset`; pass it back as `offset` and stop at
+`null`. Every response carries `x-bstonk-api-version: 1`, and an
+`Idempotency-Key` header is echoed.
 
-| | |
-|---|---|
-| Errors | `{"error":{"code":"rate_limited","message":"…","retryAfter":21}}` |
-| Lists | `items` and `nextOffset` - pass it back as `offset`, stop at `null` |
-| Headers | `x-bstonk-api-version: 1`; an `Idempotency-Key` is echoed |
-| Spec | `GET /api/v1/openapi.json` (OpenAPI 3.1) · `GET /api/v1/llms.txt` |
+```bash
+GET https://api.basestonk.io/api/v1/openapi.json   # OpenAPI 3.1
+GET https://api.basestonk.io/api/v1/llms.txt       # the same, for a context window
+```
 
 <Note>
 The spec is canonical; this page is orientation. Both are generated from one registry in the API's source and cannot drift from the server.
@@ -156,11 +158,12 @@ POST /api/v1/agent/trade/prepare
 `amountIn` is raw units of what you *spend*: the pair on a buy, the
 token on a sell.
 
-| | |
-|---|---|
-| Quoted at | the token's own tax, never a default - an assumed rate reverts `TooLittleReceived`. No rate on record refuses to quote. |
-| Verified by | the `eth_call` fill against `minOut` - a stale quote fails the verdict, not your transaction |
-| Fresh launch, nobody has bought | buys quote from the entry boundary; a sell is refused - the empty side has nothing to sell into |
+The quote is at the token's own tax, never a default - an assumed rate
+reverts `TooLittleReceived`, and a token with no rate on record refuses
+to quote. The `eth_call` fill is checked against `minOut`, so a stale
+quote fails the verdict rather than your transaction. On a fresh launch
+nobody has bought yet, buys quote from the entry boundary and a sell is
+refused: the empty side has nothing to sell into.
 
 ## The loop
 

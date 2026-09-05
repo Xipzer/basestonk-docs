@@ -1,0 +1,90 @@
+---
+title: "Managing a launch"
+sidebarTitle: "Managing"
+description: "What a creator can change after launch, hand over, or give up - and what is fixed forever."
+icon: "sliders"
+---
+
+Open a token you launched and press **Manage this token**, or find it
+under *Launches* in your portfolio. The page is gated by seat: it shows
+what your wallet holds a seat for, and nothing else.
+
+## What can change, and what cannot
+
+| Fixed forever | Yours to manage |
+|---|---|
+| Name, symbol, supply | Artwork, description, links |
+| Tax rates and the split | The dividend basket's composition |
+| The pool - no admin exists | Your fee slot: hand it over, or renounce it |
+| The percentage of volume paid to holders | Your vesting vault |
+
+## Artwork, description, links
+
+Click the artwork to replace it; edit the description and socials below.
+Changes are signed with your wallet and saved to BaseStonk's record - the
+token's on-chain `metadataUri` never changes. **Save** is armed only when
+something differs; **Discard** asks first.
+
+The seat that controls this is the **page controller**. Hand it to
+another wallet from the same page - directly on-chain through
+`LaunchControl`, or by signing a handover anyone can submit for you.
+[Takeover, when a founder is gone &rarr;](/vesting#community-takeover)
+
+## Your fee slot
+
+A payee's slot is the payee's. From **Hand over your fee slot**:
+
+**Hand it over** - transfer your slot's share to another wallet
+(`transferPayeeSlot`). The share is unchanged; only the recipient moves.
+
+**Renounce it to holders** - give your share to the token's holders,
+forever (`renounceFees`). On a token with dividends switched on, your
+share merges into the holders' distributor. On a token launched
+*without* dividends, the hook deploys a frozen distributor for it - that
+costs about 5.7M gas, and the page says so before you confirm. There is
+no undo.
+
+<Note>
+Both act on your slot only. A token with several payees is several independent decisions.
+</Note>
+
+### Stuck fees
+
+Very rarely a fee payment cannot be delivered in the trade that earned
+it - a recipient that reverts on receipt, or an out-of-gas - and the hook
+parks it as a claim inside the PoolManager rather than losing it. The
+manage page shows any such balance under **Stuck fees** and collects it
+for you: one `setOperator` approval the first time, then a claim per
+currency.
+
+## The dividend basket
+
+Under **Holder rewards**, the basket's controller can:
+
+- rebuild the basket - up to ten assets, weights summing to 100% - from
+  the same menu the launch offered, with **Current** and **Defaults**
+  (USDC + cbBTC) as starting points
+- **clear dead residuals** - an asset removed from the basket keeps
+  paying out what it still holds; once drained, this tidies the slot
+  (Base)
+- **renounce the basket** - freeze it, forever (Base). On Robinhood
+  Chain, hand the seat to a burn address instead.
+
+An empty basket pays holders in the pair. The *percentage* of volume that
+flows to holders is not on this page: it was fixed at launch.
+
+## Your vesting vault
+
+If the dev buy was locked, **Locked dev buy** shows released, claimable
+and still-locked amounts with the schedule.
+
+| Action | |
+|---|---|
+| **Release** | pays out whatever has vested. Anyone can trigger this; it always pays the beneficiary. |
+| **Claim dividends** | the locked tokens earn holder rewards; collect them per asset |
+| **Lock more** | add tokens under a new 30-day schedule |
+| **Lengthen the schedule** | extend the cliff or duration. Never shorter - the contract refuses. |
+| **Hand over the vault** | transfer the beneficiary seat to another wallet |
+| **Renounce dividends** | give the locked supply's dividend claim to the other holders, forever |
+
+[Vesting in full &rarr;](/vesting)
