@@ -79,7 +79,13 @@ A pool's identity includes its hook, and there are six generations of them. Assu
         bool      renounceBasket; // freeze in the launch transaction
     }
     ```
-    `launchDirect` and `launchGated` take the same fields with `startSqrtPriceX96` in place of `marketCapUsd`. Basket assets must pass `RoutedQuoteGate.isVetted` (or `isVettedBy` with the matching `issuers` entry). The whole eligible menu: [basket-assets](/integration/api#pairs-and-pricing).
+    `launchDirect` and `launchGated` take the same fields with `startSqrtPriceX96` in place of `marketCapUsd`.
+
+    | | Pair | Basket assets |
+    |---|---|---|
+    | Vetting | **none** - any ERC-20 the gate can price through a route | must pass `RoutedQuoteGate.isVetted` (or `isVettedBy` with the matching `issuers` entry) |
+
+    `launchGated` is how a creator-chosen pair launches: `usdPerPair(token, route)` verifies the route hop by hop and prices the opening. The API's [gatedroute](/integration/api#pairs-and-pricing) discovers a route for any address. The basket menu: [basket-assets](/integration/api#pairs-and-pricing).
   </Tab>
   <Tab title="Robinhood Chain - RhLauncher">
     ```solidity

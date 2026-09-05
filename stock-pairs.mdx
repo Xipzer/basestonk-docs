@@ -1,12 +1,43 @@
 ---
-title: "Stock pairs"
-description: "Price your launch in shares of NVIDIA, Apple, SpaceX or Coinbase. The chart moves with the stock."
+title: "Pairs"
+description: "What a launch can be priced in: curated stocks and majors, or any token with a real market that you nominate yourself."
 icon: "chart-candlestick"
 ---
 
-Pair a launch with a tokenized equity and your token is quoted in shares
-of it. The opening price is read from an on-chain feed when you sign -
-never typed, never trusted.
+A launch is quoted in its pair forever. The opening price is read
+on-chain when you sign - never typed, never trusted. Pairs come three
+ways:
+
+| | Who picks it | Priced by |
+|---|---|---|
+| **Curated** | BaseStonk - stables, majors, tokenized stocks | a Chainlink or routed feed |
+| **Ecosystem** (Base) | any admitted Clanker, Virtuals or Bankr token | a route the gate verifies |
+| **Creator-chosen** (Base) | **you - any ERC-20 with a real market** | a route the gate verifies |
+
+## Bring your own pair
+
+On Base, you are not limited to the list. Paste any token's address into
+the pair picker and, if it has a real market, you can launch against it.
+The token card then carries a **Creator-chosen pair** badge, and the
+interface says so plainly: *nominated by the creator, priced through a
+route the gate verified on chain, not a pair we added ourselves.*
+
+| The gate requires | |
+|---|---|
+| A route to USDC | one to eight hops through **Uniswap v2, v3 or v4** pools, ending in USDC (or WETH, which the gate prices to USDC itself) |
+| Not Aerodrome | Aerodrome and Slipstream pools cannot be represented by the gate. A token whose only market is Aerodrome is refused. |
+| Depth | the interface requires **\$2,500** of market depth before it offers the pair |
+| A settled price | a 60-second TWAP; the gate refuses a pool that moved inside it |
+| Honesty | every hop is re-verified on chain when you sign - not once, at listing |
+
+<Note>
+This is how a creator launched **\$EVAL** paired with **\$REPPO** - a token BaseStonk never curated, priced through one Uniswap v3 hop the gate accepted. Anyone can do the same with any token that has a market.
+</Note>
+
+What the gate does *not* do: vouch for the token. A creator-chosen pair
+is the creator's judgment about what their token should track; the gate
+only guarantees the price it opens at was real. The badge exists so a
+buyer knows which kind they are looking at.
 
 ## Three kinds of stock token
 

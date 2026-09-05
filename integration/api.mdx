@@ -107,10 +107,10 @@ treat it as both directions.
 | | Chains | |
 |---|---|---|
 | `GET /api/launchpad/pairusd/{chain}?pair=0x…` | both | USD per pair token, from the registry the launcher prices with |
-| `GET /api/launchpad/paircheck/{chain}?pair=0x…` | both | can this pair be launched against right now, and why not |
+| `GET /api/launchpad/paircheck/{chain}?pair=0x…` | both | can this address be launched against right now - `hasMarket` needs \$2,500 of depth on Base - and why not |
 | `GET /api/launchpad/ecosystem/{chain}` | both | the chain's pair catalogue - see below |
 | `GET /api/launchpad/basket-assets/base` | Base | the basket-eligible menu: `registered` (curated set, with `category`, `launchable`, `needsIssuance`) plus `ecosystem` (ranked, priced rows; paged) |
-| `GET /api/launchpad/gatedroute/base?pair=0x…` | Base | gate-verified route, `issuerFactory`, `usdPerPair` for a gated pair |
+| `GET /api/launchpad/gatedroute/base?pair=0x…` | Base | gate-verified route, `issuerFactory` (zero for a creator-chosen pair), `usdPerPair` - for **any** token address, not only catalogued ones |
 
 **`/ecosystem`**: on Base, `eco` (`clanker` `virtuals` `bankr`) browses one catalogue, absent browses all three; on Robinhood Chain, the 194 stocks, `eco` not applicable. `q` searches name, symbol or address on either.
 

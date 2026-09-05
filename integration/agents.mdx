@@ -138,7 +138,7 @@ The chain and the pair decide the leg; `intent.leg` names it:
 | Leg | Chain | Pair | Priced by | Checks |
 |---|---|---|---|---|
 | `direct` | Base | a pair the oracle registry has a feed for | the launcher's registry | generation, priceable now, salt sorts below pair, address free, `eth_call`, gas |
-| `gated` | Base | an ecosystem token with no feed | a route the RoutedQuoteGate re-verifies hop by hop. Intent adds `route`, `issuerFactory`, `startSqrtPriceX96`, `impliedCapUsd`; `gate_admits` fails when the cap is outside the band | as above |
+| `gated` | Base | **any token with no feed** - an ecosystem token, or any ERC-20 with a real market the creator nominates | a route the RoutedQuoteGate re-verifies hop by hop. Intent adds `route`, `issuerFactory` (zero for a non-ecosystem pair), `startSqrtPriceX96`, `impliedCapUsd`; `gate_admits` fails when the cap is outside the band | as above |
 | Robinhood | 4663 | USDG, WETH, any admitted Robinhood stock | `RhPairRegistry` | `pair_admitted`, `checkpoint`, `simulated`, `gas_estimated`, `dev_buy_denominated` |
 
 A pair that is neither registered nor routable is a **422 with `tx.data`
