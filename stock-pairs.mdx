@@ -12,18 +12,20 @@ ways:
 |---|---|---|
 | **Curated** | BaseStonk - stables, majors, tokenized stocks | a Chainlink or routed feed |
 | **Ecosystem** (Base) | any admitted Clanker, Virtuals or Bankr token | a route the gate verifies |
-| **Creator-chosen** (Base) | **you - any ERC-20 with a real market** | a route the gate verifies |
+| **Creator-chosen** (Base) | **you - any token from an admitted issuer, with a real market** | a route the gate verifies |
 
 ## Bring your own pair
 
-On Base, you are not limited to the list. Paste any token's address into
-the pair picker and, if it has a real market, you can launch against it.
+On Base, you are not limited to the list. Paste a token's address into
+the pair picker and, if its issuer is admitted and it has a real market,
+you can launch against it.
 The token card then carries a **Creator-chosen pair** badge, and the
 interface says so plainly: *nominated by the creator, priced through a
 route the gate verified on chain, not a pair we added ourselves.*
 
 | The gate requires | |
 |---|---|
+| An admitted issuer | the token was launched through **Clanker, Virtuals or Bankr**, or is on the curated list. The gate admits tokens by the bytecode their issuer deploys, so it can price against a token nobody at BaseStonk has looked at without pricing against one nobody can vouch for. Any other token is refused with *not vetted*, whatever its market - ask on [X](https://x.com/BaseStonk) to have an issuer reviewed. |
 | A route to USDC | one to eight hops through **Uniswap v2, v3 or v4** pools, ending in USDC (or WETH, which the gate prices to USDC itself) |
 | Not Aerodrome | Aerodrome and Slipstream pools cannot be represented by the gate. A token whose only market is Aerodrome is refused. |
 | Depth | the interface requires **\$2,500** of market depth before it offers the pair |
@@ -31,7 +33,7 @@ route the gate verified on chain, not a pair we added ourselves.*
 | Honesty | every hop is re-verified on chain when you sign - not once, at listing |
 
 <Note>
-This is how a creator launched **\$EVAL** paired with **\$REPPO** - a token BaseStonk never curated, priced through one Uniswap v3 hop the gate accepted. Anyone can do the same with any token that has a market.
+This is how a creator launched **\$EVAL** paired with **\$REPPO** - a token BaseStonk never curated, priced through one Uniswap v3 hop the gate accepted. \$REPPO is a Clanker token, which is why the gate admitted it; anyone can do the same with any admitted-issuer token that has a market.
 </Note>
 
 What the gate does *not* do: vouch for the token. A creator-chosen pair
