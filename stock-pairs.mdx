@@ -41,14 +41,11 @@ is the creator's judgment about what their token should track; the gate
 only guarantees the price it opens at was real. The badge exists so a
 buyer knows which kind they are looking at.
 
-## Three kinds of stock token
+## Two kinds of stock token
 
 <Tabs>
-  <Tab title="Robinhood stocks">
-    **Robinhood Chain.** 194 equities and ETFs issued by Robinhood - NVDA, AAPL, TSLA, SPY and the rest. Admitted by what they are, not by a list; priced by Chainlink where a feed exists and by the token's own market otherwise, behind a depth gate. [Chains &rarr;](/chains#robinhood-stocks-as-pairs)
-  </Tab>
   <Tab title="ST0x wrapped">
-    **Base.** Eleven 1:1 backed equities and ETFs **with real DEX liquidity** - anyone can buy a token paired with these using plain ETH.
+    Eleven 1:1 backed equities and ETFs **with real DEX liquidity** - anyone can buy a token paired with these using plain ETH.
 
     | Priced by | Tickers |
     |---|---|
@@ -56,7 +53,7 @@ buyer knows which kind they are looking at.
     | Routed feed | wtSGOV, wtSKHY, wtSPYM, wtDRAM, wtQQQM, wtIAU, wtCEG |
   </Tab>
   <Tab title="Coinbase B20">
-    **Base.** NVDAc, COINc and friends, issued in the Coinbase app. Four trade in live pools against USDC - **NVDAc, GOOGLc, AAPLc, METAc**. The other nine have no on-chain market yet: buyers must already hold the stock, and ETH cannot route into them.
+    NVDAc, COINc and friends, issued in the Coinbase app. Four trade in live pools against USDC - **NVDAc, GOOGLc, AAPLc, METAc**. The other nine have no on-chain market yet: buyers must already hold the stock, and ETH cannot route into them.
   </Tab>
 </Tabs>
 
@@ -68,7 +65,6 @@ The form tells you which kind you are choosing.
 |---|---|---|
 | **Chainlink feed** | one exists for the equity | stale beyond **96 hours** (equity markets close at weekends; 24h would fail every Saturday) |
 | **Routed feed** | no Chainlink feed (Base ETFs, foreign listings) | any hop of its fixed route is too thin - `HopTooThin` |
-| **Market depth** | Robinhood stocks without a feed | inflating the cap 10x would cost under \$1,000 |
 
 A feed that refuses stops the launch. That is the design: a launch priced
 off a pool a \$500 trade could move opens at a market cap that was never

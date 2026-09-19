@@ -7,8 +7,7 @@ icon: "wand-magic-sparkles"
 
 Every launch mints **1,000,000,000 tokens** and opens a Uniswap v4 pool
 with 99% of them. The pair you pick is what the chart is quoted in,
-forever. Same form on Base and Robinhood Chain - chain is the first
-choice, and the differences are marked below.
+forever.
 
 ## What one signature does
 
@@ -26,9 +25,8 @@ choice, and the differences are marked below.
 
 | Pair | Opening cap |
 |---|---|
-| Standard, Base | \$500 - \$10,000 |
-| Gated ecosystem, Base | \$250 - \$15,000 |
-| Any, Robinhood Chain | \$250 - \$15,000 |
+| Standard | \$500 - \$10,000 |
+| Gated ecosystem | \$250 - \$15,000 |
 
 Some stock pairs refuse very low caps; the form warns and shows the exact
 opening price before you sign. Not on the list? On Base you can
@@ -49,16 +47,16 @@ They differ in one thing: who sets the tax and how it is divided.
 An Advanced launch divides the creator's share among these. Each runs
 inside the swap itself; none can be changed after launch by anyone.
 
-| Wedge | Does | Base | Robinhood |
-|---|---|:-:|:-:|
-| **Payees** | up to 8 wallets, custom shares | ✓ | ✓ |
-| **Holder dividends** | every holder paid their share, automatically, in up to 10 assets the creator picked. [Baskets &rarr;](/dividend-baskets) | ✓ | ✓ |
-| **Buyback & burn** | buys the token from its own pool and burns it, in the same transaction as the trade | ✓ | ✓ |
-| **Liquidity** | deepens the pool, raising the floor under later sellers | ✓ | ✓ |
-| **\$BSTONK basket** | a share into the platform vault | ✓ | - |
+| Wedge | Does |
+|---|---|
+| **Payees** | up to 8 wallets, custom shares |
+| **Holder dividends** | every holder paid their share, automatically, in up to 10 assets the creator picked. [Baskets &rarr;](/dividend-baskets) |
+| **Buyback & burn** | buys the token from its own pool and burns it, in the same transaction as the trade |
+| **Liquidity** | deepens the pool, raising the floor under later sellers |
+| **\$BSTONK basket** | a share into the platform vault |
 
 <Note>
-Simple launches get the dividend wedge (and on Base, the \$BSTONK basket wedge) switched on by default at the fixed 1%.
+Simple launches get the dividend wedge and the \$BSTONK basket wedge switched on by default at the fixed 1%.
 </Note>
 
 ## Protections
@@ -68,7 +66,7 @@ Simple launches get the dividend wedge (and on Base, the \$BSTONK basket wedge) 
 | **Max wallet** | buys that would breach the cap revert. Sells are never blocked. Creator and pool exempt. | any % |
 | **Anti-sniper toll** | buys in the opening window pay a rate that decays from up to 99% down to your buy tax. Sells never pay it. The token page shows a live meter. | window up to 30 min |
 | **Dev-buy vesting** | locks your dev buy in a vault with a public schedule. [Vesting &rarr;](/vesting) | 7 days minimum, no maximum |
-| **Renounce basket seat** | freezes the payout basket in the launch transaction | Base only - on Robinhood Chain, hand the seat to a burn address after launch |
+| **Renounce basket seat** | freezes the payout basket in the launch transaction | one way, no undo |
 
 ## Your own buy
 

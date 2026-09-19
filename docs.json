@@ -5,7 +5,7 @@
   "appearance": {
     "default": "dark"
   },
-  "description": "Launch a token on Base or Robinhood Chain and trade it from its first block - priced in stables, majors, tokenized stocks, or $BSTONK.",
+  "description": "Launch a token on Base and trade it from its first block - priced in stables, majors, tokenized stocks, or $BSTONK.",
   "colors": {
     "primary": "#0052FF",
     "light": "#00C2FF",
@@ -22,8 +22,7 @@
         "group": "Start here",
         "pages": [
           "index",
-          "quickstart",
-          "chains"
+          "quickstart"
         ]
       },
       {

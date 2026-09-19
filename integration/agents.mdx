@@ -53,7 +53,7 @@ Branch on status and `code`, never on `message`.
 |---|---|---|---|
 | `invalid_request` | 400 | malformed address, interval or parameter | fix; do not retry unchanged |
 | `validation_failed` | 400 | body failed schema - `detail` names fields | fix the named fields |
-| `unknown_chain` | 400 | not `base` / `robinhood` (8453 / 4663) | use one of those |
+| `unknown_chain` | 400 | not `base` (8453) | use `base` |
 | `unauthorized` | 401 | signature absent, expired or already used | mint a fresh session |
 | `forbidden` | 403 | bearer lacks the scope, or creator is not the bearer's wallet | sign the right `action`; launch as yourself |
 | `not_found` | 404 | no row | verify; do not loop |
@@ -81,7 +81,7 @@ POST /api/v1/agent/session
 
 | Typed data | |
 |---|---|
-| Domain | `{ name: "BaseStonk", version: "1", chainId: 8453 }` - or `4663`; either is accepted |
+| Domain | `{ name: "BaseStonk", version: "1", chainId: 8453 }` |
 | Type | `Authorization { action: string, address: address, expiresAt: uint256, detail: string }` |
 | `action` | `agent:session` for read · `agent:session:prepare` for read + `/prepare` |
 | `detail` | empty |
@@ -98,13 +98,13 @@ redeemed for prepare.
 ## Prepared transactions
 
 Both endpoints need the `prepare` scope and take `chainId` in the body
-(`8453` or `4663`; absent means Base). `tx.chainId` echoes it; `tx.to`
-is that chain's launcher or router.
+(`8453`; absent means the same). `tx.chainId` echoes it; `tx.to` is the
+launcher or the router.
 
 ```json
 {
   "intent":         { "…the calldata, decoded…" },
-  "tx":             { "to": "0x…", "data": "0x…", "value": "0", "chainId": 4663, "gas": "1829382" },
+  "tx":             { "to": "0x…", "data": "0x…", "value": "0", "chainId": 8453, "gas": "1829382" },
   "approvalTx":     null,
   "verdict":        { "ok": true, "checks": [ { "id": "…", "ok": true, "detail": "…" } ] },
   "expiresAtBlock": "50719091",
@@ -135,18 +135,15 @@ POST /api/v1/agent/launch/prepare
 The creator is always the bearer's wallet. `devBuyPair` is raw pair
 units; the intent reports it as amount, USD and `percentOfSupplyAtOpen`.
 
-The chain and the pair decide the leg; `intent.leg` names it:
+The pair decides the leg; `intent.leg` names it:
 
-| Leg | Chain | Pair | Priced by | Checks |
-|---|---|---|---|---|
-| `direct` | Base | a pair the oracle registry has a feed for | the launcher's registry | generation, priceable now, salt sorts below pair, address free, `eth_call`, gas |
-| `gated` | Base | **any token with no feed** - an ecosystem token, or any ERC-20 with a real market the creator nominates | a route the RoutedQuoteGate re-verifies hop by hop. Intent adds `route`, `issuerFactory` (zero for a non-ecosystem pair), `startSqrtPriceX96`, `impliedCapUsd`; `gate_admits` fails when the cap is outside the band | as above |
-| Robinhood | 4663 | USDG, WETH, any admitted Robinhood stock | `RhPairRegistry` | `pair_admitted`, `checkpoint`, `simulated`, `gas_estimated`, `dev_buy_denominated` |
+| Leg | Pair | Priced by | Checks |
+|---|---|---|---|
+| `direct` | a pair the oracle registry has a feed for | the launcher's registry | generation, priceable now, salt sorts below pair, address free, `eth_call`, gas |
+| `gated` | **any token with no feed** - an ecosystem token, or any ERC-20 with a real market the creator nominates | a route the RoutedQuoteGate re-verifies hop by hop. Intent adds `route`, `issuerFactory` (zero for a non-ecosystem pair), `startSqrtPriceX96`, `impliedCapUsd`; `gate_admits` fails when the cap is outside the band | as above |
 
 A pair that is neither registered nor routable is a **422 with `tx.data`
-empty** - nothing to sign. On Robinhood Chain a v4-priced pair needs a
-checkpoint 60-3600s old; if one is missing, the answer carries the
-transaction that posts it.
+empty** - nothing to sign.
 
 ### Trade
 

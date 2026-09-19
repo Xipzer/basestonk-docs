@@ -17,11 +17,9 @@ envelope, an OpenAPI document and the `/prepare` endpoints -
 | `{chain}` | Id | Explorer |
 |---|---|---|
 | `base` | 8453 | Basescan |
-| `robinhood` | 4663 | Blockscout |
 
 `?chain=` on token and wallet routes; a path segment on venue routes.
-Wrong chain for a token is `404`, never the other index. Endpoints that
-exist on one chain only are marked.
+Anything but `base` is `400`.
 
 ## Rate limits
 
@@ -56,7 +54,7 @@ HTTP 429   retry-after: 21
 
 | Status | Body | Do |
 |---|---|---|
-| `400` | `{"error":"unknown chain"}` | use `base` or `robinhood` |
+| `400` | `{"error":"unknown chain"}` | use `base` |
 | `400` | `{"error":"invalid address"}` | fix it; do not retry unchanged |
 | `400` | `{"error":"bad interval"}` | pick from the candles list |
 | `400` | `{"error":{...}}` | fix the named fields |
@@ -150,10 +148,9 @@ address can be launched against right now - `hasMarket` needs \$2,500 of
 depth on Base - and names any namesake risk. `pair-identity` resolves
 symbol, name and artwork for any address, curated or not.
 
-`ecosystem` is the chain's pair catalogue. On Base, `eco` (`clanker`
-`virtuals` `bankr`) browses one catalogue and absent browses all three;
-on Robinhood Chain it is the 194 stocks. `q` searches name, symbol or
-address.
+`ecosystem` is the pair catalogue. `eco` (`clanker` `virtuals` `bankr`)
+browses one catalogue and absent browses all three. `q` searches name,
+symbol or address.
 
 ```bash
 GET /api/launchpad/basket-assets/base

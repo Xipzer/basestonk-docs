@@ -5,10 +5,9 @@ description: "The router, the PoolKey, the launch tuples, the events to watch an
 icon: "link"
 ---
 
-For code that signs transactions or reads the chain directly. Same on
-Base and Robinhood Chain against each chain's
-[contracts](/integration/contracts); differences are marked. Indexed data
-only? Use the [REST API](/integration/api).
+For code that signs transactions or reads the chain directly, against
+the [contracts](/integration/contracts). Indexed data only? Use the
+[REST API](/integration/api).
 
 ## Trading
 
@@ -46,63 +45,46 @@ A pool's identity includes its hook, and there are six generations of them. Assu
 
 ## Launching programmatically
 
-<Tabs>
-  <Tab title="Base - AdvancedLauncherV6">
-    ```solidity
-    struct LaunchParams {
-        string  name;
-        string  symbol;
-        uint256 supply;
-        string  metadataUri;
-        address creator;
-        address pairToken;
-        uint256 marketCapUsd;
-        uint16  buyTaxBps;        // each capped at 1000
-        uint16  sellTaxBps;       // independent of buyTaxBps
-        uint16  burnBps;
-        uint16  liquidityBps;
-        uint256 buyPair;          // dev buy, in pair-token units
-        uint16  maxWalletBps;
-        uint16  rewardsBps;
-        uint64  vestCliff;        // seconds
-        uint64  vestDuration;     // seconds; 0 = no vault
-        uint32  sniperWindow;     // seconds, 10-1800; 0 = no toll
-        uint16  sniperStartBps;   // must exceed buyTaxBps
-        PayoutBasket basket;
-        bytes32 salt;
-    }
-    struct PayoutBasket {
-        address[] tokens;
-        uint16[]  weights;
-        address[] issuers;        // for ecosystem tokens
-        uint16    vaultShareBps;
-        bool      renounceBasket; // freeze in the launch transaction
-    }
-    ```
-    `launchDirect` and `launchGated` take the same fields with `startSqrtPriceX96` in place of `marketCapUsd`.
+**AdvancedLauncherV6**
 
-    | | Pair | Basket assets |
-    |---|---|---|
-    | Vetting | **none** - any ERC-20 the gate can price through a route | must pass `RoutedQuoteGate.isVetted` (or `isVettedBy` with the matching `issuers` entry) |
+```solidity
+struct LaunchParams {
+    string  name;
+    string  symbol;
+    uint256 supply;
+    string  metadataUri;
+    address creator;
+    address pairToken;
+    uint256 marketCapUsd;
+    uint16  buyTaxBps;        // each capped at 1000
+    uint16  sellTaxBps;       // independent of buyTaxBps
+    uint16  burnBps;
+    uint16  liquidityBps;
+    uint256 buyPair;          // dev buy, in pair-token units
+    uint16  maxWalletBps;
+    uint16  rewardsBps;
+    uint64  vestCliff;        // seconds
+    uint64  vestDuration;     // seconds; 0 = no vault
+    uint32  sniperWindow;     // seconds, 10-1800; 0 = no toll
+    uint16  sniperStartBps;   // must exceed buyTaxBps
+    PayoutBasket basket;
+    bytes32 salt;
+}
+struct PayoutBasket {
+    address[] tokens;
+    uint16[]  weights;
+    address[] issuers;        // for ecosystem tokens
+    uint16    vaultShareBps;
+    bool      renounceBasket; // freeze in the launch transaction
+}
+```
+`launchDirect` and `launchGated` take the same fields with `startSqrtPriceX96` in place of `marketCapUsd`.
 
-    `launchGated` is how a creator-chosen pair launches: `usdPerPair(token, route)` verifies the route hop by hop and prices the opening. The API's [gatedroute](/integration/api#pairs-and-pricing) discovers a route for any address. The basket menu: [basket-assets](/integration/api#pairs-and-pricing).
-  </Tab>
-  <Tab title="Robinhood Chain - RhLauncher">
-    ```solidity
-    // RhLauncher.launch(LaunchParams p, Payee[] payees)
-    // Every field as Base's, in the same order, except the basket:
-    struct PayoutBasket {
-        address[] tokens;
-        uint16[]  weights;
-    }
-    ```
-    No `issuers`, `vaultShareBps` or `renounceBasket` - there is no basket seat to describe. `marketCapUsd` bounded \$250 - \$15,000. Every basket asset must pass `RhPairRegistry.isAdmitted`, the same predicate that admits the pair.
+| | Pair | Basket assets |
+|---|---|---|
+| Vetting | **none** - any ERC-20 the gate can price through a route | must pass `RoutedQuoteGate.isVetted` (or `isVettedBy` with the matching `issuers` entry) |
 
-    <Warning>
-    The token's creation code differs (a different compiler profile). A salt mined against Base's `AdvancedLaunchToken` bytecode predicts an address the Robinhood launcher never creates and reverts `TokenMustSortBelowPair`. Mine against the 4663 build.
-    </Warning>
-  </Tab>
-</Tabs>
+`launchGated` is how a creator-chosen pair launches: `usdPerPair(token, route)` verifies the route hop by hop and prices the opening. The API's [gatedroute](/integration/api#pairs-and-pricing) discovers a route for any address. The basket menu: [basket-assets](/integration/api#pairs-and-pricing).
 
 | Rule | Enforced by |
 |---|---|
@@ -112,21 +94,13 @@ A pool's identity includes its hook, and there are six generations of them. Assu
 
 ## The basket controller seat
 
-<Tabs>
-  <Tab title="Base - HolderRewards">
-    ```solidity
-    function setBasket(address[] tokens, uint16[] weights) external
-    function transferBasketControl(address to) external
-    function renounceBasket() external            // one way
-    ```
-  </Tab>
-  <Tab title="Robinhood Chain - RhHolderRewards">
-    ```solidity
-    function setBasket((address asset, uint16 weightBps)[] slots) external
-    function setController(address c) external   // to a burn address to freeze
-    ```
-  </Tab>
-</Tabs>
+**HolderRewards**
+
+```solidity
+function setBasket(address[] tokens, uint16[] weights) external
+function transferBasketControl(address to) external
+function renounceBasket() external            // one way
+```
 
 Find the distributor from the token's `rewardTracker()` or the API's
 `rewardsDistributor`.
@@ -177,5 +151,4 @@ feed, and the form blocks it. It reopens by itself when liquidity returns.
 | `VestRequiresDevBuy` | `vestDuration > 0`, `buyPair == 0` | a lock needs something to lock |
 | `TaxTooHigh` | a tax field over 1000 bps | 10% per side is the ceiling |
 | `MarketCapOutOfRange` | the cap is outside the launcher's band | [the ranges](/launching#what-one-signature-does) |
-| `TokenMustSortBelowPair` | the mined address sorts above the pair | re-mine; on 4663, against the 4663 bytecode |
-| `PairNotAdmitted` (4663) | a pair or basket asset fails `isAdmitted` | pick an admitted one |
+| `TokenMustSortBelowPair` | the mined address sorts above the pair | re-mine |
