@@ -1,12 +1,15 @@
 ---
 title: "Contract reference"
-description: "Every address, source-verified."
+description: "Every address on both chains, source-verified."
 icon: "file-contract"
 ---
 
-Every address on Base (8453), each link opening at the verified code.
+Every address on both chains, each link opening at the verified code.
 
-Current launcher: [AdvancedLauncherV6](#base-current-v6).
+| Chain | Id | Explorer | Current launcher |
+|---|---|---|---|
+| Base | 8453 | Basescan | [AdvancedLauncherV6](#base-current-v6) |
+| Robinhood Chain | 4663 | Blockscout | [RhLauncher](#robinhood-chain-4663) |
 
 ## Base - current (V6)
 
@@ -92,6 +95,41 @@ V4 and V5 rows are the last deployment of each; earlier revisions exist. Read a 
 |---|---|
 | Uniswap v4 PoolManager | [`0x498581fF718922c3f8e6A244956aF099B2652b2b`](https://basescan.org/address/0x498581fF718922c3f8e6A244956aF099B2652b2b#code) |
 
+## Robinhood Chain (4663)
+
+Deployed 2026-09-04. `RhLauncher` is a different contract from Base's V6, built for the chain's pricing model; the hook is the same `AdvancedFeeHookV6`.
+
+| Contract | Address |
+|---|---|
+| RhLauncher | [`0x302BdDA741dff12c298F68eDc67b4fA830a1f6A4`](https://robinhoodchain.blockscout.com/address/0x302BdDA741dff12c298F68eDc67b4fA830a1f6A4?tab=contract) |
+| AdvancedFeeHookV6 | [`0xF42bC6ca0D082D3Af51771392CeC847a01A6e044`](https://robinhoodchain.blockscout.com/address/0xF42bC6ca0D082D3Af51771392CeC847a01A6e044?tab=contract) |
+| RhPairRegistry | [`0x50264dFd44d6E0272b107F9dfcc226E4A1cc41fF`](https://robinhoodchain.blockscout.com/address/0x50264dFd44d6E0272b107F9dfcc226E4A1cc41fF?tab=contract) |
+| RhHolderRewardsFactory | [`0x5B64396036c94E1Bfb3F4Ed57b2B959d558D997C`](https://robinhoodchain.blockscout.com/address/0x5B64396036c94E1Bfb3F4Ed57b2B959d558D997C?tab=contract) |
+| LaunchVestingFactory | [`0xeFc8176A284e9fa3C0D5103716B5cdBb90497802`](https://robinhoodchain.blockscout.com/address/0xeFc8176A284e9fa3C0D5103716B5cdBb90497802?tab=contract) |
+| LaunchControl | [`0x5F310e9825850A67C3B79b233a9ba4979Ee74C8D`](https://robinhoodchain.blockscout.com/address/0x5F310e9825850A67C3B79b233a9ba4979Ee74C8D?tab=contract) |
+| SwapRouter | [`0x6A10c4117D37FaaDf429c36522A756Ee9435874f`](https://robinhoodchain.blockscout.com/address/0x6A10c4117D37FaaDf429c36522A756Ee9435874f?tab=contract) |
+| RhFeeVault | [`0x618D78262a8dDE229A088C41C0bFf440aC79D267`](https://robinhoodchain.blockscout.com/address/0x618D78262a8dDE229A088C41C0bFf440aC79D267?tab=contract) |
+
+`RhPairRegistry` admits and prices pairs - [the gate](/chains#robinhood-stocks-as-pairs). `RhFeeVault` holds the platform's cut as USDG. No basket vault, gate lens or routed quote gate: what they serve on Base does not exist here.
+
+### Linked libraries
+
+| Library | Address |
+|---|---|
+| LaunchOpening | [`0x9d2A32F2883DA90d4D9e41332d6a633b4aE3a1A7`](https://robinhoodchain.blockscout.com/address/0x9d2A32F2883DA90d4D9e41332d6a633b4aE3a1A7?tab=contract) |
+| RhDepth | [`0xA6090C34c1b2617f03F5b979434221F009339D97`](https://robinhoodchain.blockscout.com/address/0xA6090C34c1b2617f03F5b979434221F009339D97?tab=contract) |
+
+### Pair tokens and infrastructure (not ours)
+
+| Contract | Address |
+|---|---|
+| USDG | `0x5fc5360D0400a0Fd4f2af552ADD042D716F1d168` |
+| WETH | `0x0Bd7D308f8E1639FAb988df18A8011f41EAcAD73` |
+| Uniswap v4 PoolManager | `0x8366a39CC670B4001A1121B8F6A443A643e40951` |
+| Uniswap v3 factory | `0x1f7d7550B1b028f7571E69A784071F0205FD2EfA` |
+
+The 194 stock tokens are proxies sharing one implementation, admitted by code hash - ask `RhPairRegistry.isAdmitted(address)`. Launched tokens (`AdvancedLaunchToken`) and distributors (`RhHolderRewards`) are verified once; Blockscout matches later instances by bytecode.
+
 ## Pool parameters
 
-Fee `3000`, tick spacing `60`, the launcher's hook. PoolKey, tuples and events: [on-chain](/integration/onchain).
+Fee `3000`, tick spacing `60`, that chain's launcher hook. PoolKey, tuples and events: [on-chain](/integration/onchain).

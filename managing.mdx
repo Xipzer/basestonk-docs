@@ -66,7 +66,9 @@ Under **Holder rewards**, the basket's controller can:
   (USDC + cbBTC) as starting points
 - **clear dead residuals** - an asset removed from the basket keeps
   paying out what it still holds; once drained, this tidies the slot
-- **renounce the basket** - freeze it, forever
+  (Base)
+- **renounce the basket** - freeze it, forever (Base). On Robinhood
+  Chain, hand the seat to a burn address instead.
 
 An empty basket pays holders in the pair. The *percentage* of volume that
 flows to holders is not on this page: it was fixed at launch.

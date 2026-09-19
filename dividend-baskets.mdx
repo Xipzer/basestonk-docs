@@ -26,9 +26,10 @@ trade. Nothing to claim. Nothing to trust.
   </Step>
 </Steps>
 
-The menu is the admitted pairs: tokenized stocks, ETFs, cbBTC, \$BSTONK
-and several hundred ecosystem tokens. With no basket, dividends are paid
-in the pair.
+The menu is the chain's admitted pairs: on Base, tokenized stocks, ETFs,
+cbBTC, \$BSTONK and several hundred ecosystem tokens; on Robinhood Chain,
+the 194 Robinhood stocks, USDG and WETH. With no basket, dividends are
+paid in the pair.
 
 ## What it adds up to
 
@@ -56,10 +57,10 @@ The basket's **composition** sits behind a seat. The **percentage of volume** do
 | Hand the seat to another address | Touch dividends already paid |
 | Renounce it - one way, no undo, not even by the platform | |
 
-| Closing the seat | |
-|---|---|
-| At launch | tick *renounce basket control* |
-| Later | `renounceBasket()` |
+| Closing the seat | Base | Robinhood Chain |
+|---|---|---|
+| At launch | tick *renounce basket control* | not on the form |
+| Later | `renounceBasket()` | hand the seat to a burn address |
 
 Whether a seat is live is public on-chain state. Rebuilding a basket
 changes where *future* dividends go; value in flight still reaches

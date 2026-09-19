@@ -4,11 +4,15 @@ description: "Wallet to pool through a router that custodies nothing. What you p
 icon: "arrow-right-arrow-left"
 ---
 
-No deposit, no account. Everything is on Base; the wallet signs there.
+No deposit, no account. The header's chain switch decides which tokens you
+see and which network the wallet signs on.
 
 ## Pay with what you hold
 
-ETH, WETH or USDC.
+| Chain | Pay in |
+|---|---|
+| Base | ETH, WETH, USDC |
+| Robinhood Chain | ETH, WETH, USDG |
 
 The panel routes your asset into the token's pair through an aggregator,
 then completes the pool swap - one flow, one confirmation. Most stock
