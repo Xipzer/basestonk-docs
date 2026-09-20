@@ -179,6 +179,39 @@ GET /api/launchpad/burn/base/history
 summed fields; \$BSTONK's burn is deliberately not one). `burn` is the
 \$BSTONK burn total; `history` is the daily series.
 
+### Launchpads compared
+
+```bash
+GET /api/launchpad/comps
+GET /api/launchpad/comps/history?days=30
+```
+
+BaseStonk beside the other launchpads - The Stonks Exchange, o1, stonk.fun,
+Pons, Bankr, Clanker, Virtuals - on one accounting rule for every venue,
+BaseStonk included: DefiLlama where the venue has an adapter, the venue's
+own published dashboard where it does not, our ledger for us; CoinGecko
+market cap for everyone. Refreshed daily; `source` names the accounting on
+every row and a `null` is a figure no source publishes, never a zero.
+
+| field | |
+|---|---|
+| `rows[]` | per venue: `marketCapUsd`, `fees30dUsd`, `volume30dUsd`, `toHolders30dUsd`, `feesToHoldersPct`, and the two ratios that make venues comparable - `feesPer100Cap` and `volumePer1Cap` |
+| `basestonk` | our own row |
+| `implied[]` | what BSTONK's market cap would be at each peer's `feesPer100Cap` / `volumePer1Cap`: our own 30-day fees or volume divided by their ratio. Arithmetic on the row, not a forecast |
+| `summary[]` | the same in sentences, with BaseStonk's rank on each ratio |
+
+`history` returns every venue's daily rows for the last `days` (1-365) so
+the ratios can be charted over time. Cached five minutes at the edge. The
+same table drives the [Dune dashboard](https://dune.com/xipz/basestonk) and
+the `launchpad_comps` MCP tool.
+
+<Note>
+Quote the ratios, not the raw volume. Volume rewards the biggest venue; fees
+or volume per dollar of market cap is the measure on which a small venue can
+be shown to be doing more with less - and on which BaseStonk is not first on
+every day, which is exactly why the row that beats it stays in the table.
+</Note>
+
 ### Live updates
 
 ```
