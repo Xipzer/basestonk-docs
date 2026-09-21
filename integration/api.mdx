@@ -212,6 +212,32 @@ be shown to be doing more with less - and on which BaseStonk is not first on
 every day, which is exactly why the row that beats it stays in the table.
 </Note>
 
+### Launch presets
+
+```bash
+GET /api/launchpad/templates/{id}
+```
+
+A partner's preset for the create page, opened by link:
+`https://basestonk.io/create?template=reppo-datanet` (add `name=` and
+`symbol=` to prefill those too). The response is the preset with its payee
+addresses resolved - pair, buy/sell tax, the partner's payee and its minimum
+share of the creator fee, the minimum dev-buy lock, the anti-sniper window and
+the holder limit - plus `ready`. When `ready` is `false`, `missing` names the
+server setting the partner has not supplied yet and the form opens plain.
+
+The form fixes the pair and the taxes, locks the partner's payee row at its
+floor, and refuses to launch below the minimum lock. The creator signs in
+their own wallet as with any launch; nothing about a preset touches the API
+with a key. A wallet calling the launcher directly is bound only by the
+launcher - the preset is a promise the form keeps, not a rule the chain does.
+
+| id | partner | preset |
+|---|---|---|
+| `reppo-datanet` | [Reppo](https://reppo.ai) | paired with \$REPPO · 2% buy / 2% sell · 40% of creator fees to REPPO buyback & burn (locked) · 30-day dev-buy lock · 15-minute anti-sniper window · 5% holder limit |
+
+The `launch_link` MCP tool takes the same `template`.
+
 ### Live updates
 
 ```
