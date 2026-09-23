@@ -1,15 +1,18 @@
 ---
 title: "Contract reference"
-description: "Every address on both chains, source-verified."
+description: "Every address on Base, Robinhood Chain and Arc."
 icon: "file-contract"
 ---
 
-Every address on both chains, each link opening at the verified code.
+Every address on every chain. On Base and Robinhood Chain each link opens at
+the verified code; Arc's explorer cannot verify source yet, so Arc links open
+at the address.
 
 | Chain | Id | Explorer | Current launcher |
 |---|---|---|---|
 | Base | 8453 | Basescan | [AdvancedLauncherV6](#base-current-v6) |
 | Robinhood Chain | 4663 | Blockscout | [RhLauncher](#robinhood-chain-4663) |
+| Arc | 5042 | Arcscan | [RhLauncher](#arc-5042) |
 
 ## Base - current (V6)
 
@@ -129,6 +132,47 @@ Deployed 2026-09-04. `RhLauncher` is a different contract from Base's V6, built 
 | Uniswap v3 factory | `0x1f7d7550B1b028f7571E69A784071F0205FD2EfA` |
 
 The 194 stock tokens are proxies sharing one implementation, admitted by code hash - ask `RhPairRegistry.isAdmitted(address)`. Launched tokens (`AdvancedLaunchToken`) and distributors (`RhHolderRewards`) are verified once; Blockscout matches later instances by bytecode.
+
+## Arc (5042)
+
+Deployed 2026-09-16. The same `RhLauncher` and `AdvancedFeeHookV6` code as
+Robinhood Chain, with Arc's own pair registry and fee vault. Gas and the
+fee are both USDC.
+
+| Contract | Address |
+|---|---|
+| RhLauncher | [`0xCa00D03E5A5Bd2F4B9E161A1611d8fA46A672Fe0`](https://arc-scan.org/address/0xCa00D03E5A5Bd2F4B9E161A1611d8fA46A672Fe0) |
+| AdvancedFeeHookV6 | [`0xe8F9eaE16a6AB395191b1b409ab7ab5b5dc36044`](https://arc-scan.org/address/0xe8F9eaE16a6AB395191b1b409ab7ab5b5dc36044) |
+| ArcPairRegistry | [`0x828013971942776B2A801c6a2f83E8eeF1292289`](https://arc-scan.org/address/0x828013971942776B2A801c6a2f83E8eeF1292289) |
+| RhHolderRewardsFactory | [`0x6f8bF3FD64Dc86d8C4B41fe7743Cc6D0278b3342`](https://arc-scan.org/address/0x6f8bF3FD64Dc86d8C4B41fe7743Cc6D0278b3342) |
+| LaunchVestingFactory | [`0x4d749776fB81036c05e13A553476E36438fc854b`](https://arc-scan.org/address/0x4d749776fB81036c05e13A553476E36438fc854b) |
+| LaunchControl | [`0xa7A9a16928C7234D02CdAdD6587Fef9E8679D52D`](https://arc-scan.org/address/0xa7A9a16928C7234D02CdAdD6587Fef9E8679D52D) |
+| SwapRouter | [`0x3f7656D75063224aDAf7FA56eD09985e7BEC19B1`](https://arc-scan.org/address/0x3f7656D75063224aDAf7FA56eD09985e7BEC19B1) |
+| ArcFeeVault | [`0x180767E20B252167637148d35568C0ECc1A1C14a`](https://arc-scan.org/address/0x180767E20B252167637148d35568C0ECc1A1C14a) |
+
+`ArcPairRegistry` admits and prices pairs - USDC through its Chainlink feed,
+the rest from their own markets. `ArcFeeVault` holds the platform's cut as
+USDC. The swap router is the one [`prepare_trade`](/integration/mcp#the-agent-tier)
+and `/api/v1/agent/trade/prepare` address on Arc.
+
+### Linked libraries
+
+The same CREATE2 addresses as on Robinhood Chain.
+
+| Library | Address |
+|---|---|
+| LaunchOpening | [`0x9d2a32f2883Da90D4D9e41332D6A633B4Ae3a1A7`](https://arc-scan.org/address/0x9d2a32f2883Da90D4D9e41332D6A633B4Ae3a1A7) |
+| RhDepth | [`0xA6090c34C1b2617f03f5B979434221F009339d97`](https://arc-scan.org/address/0xA6090c34C1b2617f03f5B979434221F009339d97) |
+
+### Pair tokens and infrastructure (not ours)
+
+| Contract | Address |
+|---|---|
+| USDC | `0x3600000000000000000000000000000000000000` |
+| NVDA | `0x6505506540dc99f7366316b10e9cf1a584cbd42a` |
+| CRCL | `0x2ba0f44bdfc17fba30eda9cdbecb908ca45b043b` |
+| Uniswap v4 PoolManager | `0x8366a39CC670B4001A1121B8F6A443A643e40951` |
+| Uniswap v3 factory | `0xf0db7b58379503491d857dB50AC9ece64c653918` |
 
 ## Pool parameters
 

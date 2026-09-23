@@ -151,7 +151,7 @@ renounced. Value in a replaced slot drains to holders on the same maths.
 | `VaultCreated(token, vault, beneficiary, vestCliff, vestDuration)` | the launcher | the vesting schedule, when there is one |
 | `FeeTaken(poolId, currency, platformFee, creatorFee)` | the hook | every taxed swap's fee flow |
 
-Same events on both chains; one decoder serves both.
+Same events on all three chains - Arc runs the same launcher and hook code as Robinhood Chain - so one decoder serves every chain.
 
 ## Decoding reverts
 
