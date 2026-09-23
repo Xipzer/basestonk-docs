@@ -11,6 +11,9 @@ Working from Claude, ChatGPT or another MCP client? The same prepare
 endpoints are tools on the [MCP server](/integration/mcp), with a sign-in
 button instead of a hand-minted session.
 
+The API is free, and stays free: no key, no plan, no charge per call, with
+or without a bearer.
+
 <Warning>
 **BaseStonk never signs, relays or broadcasts.** `/prepare` returns an unsigned transaction - `to`, `data`, `value`, `chainId`. Sending is yours. A client waiting for a hash from this API waits forever.
 </Warning>
@@ -31,6 +34,8 @@ GET https://api.basestonk.io/api/v1/llms.txt       # the same, for a context win
 
 <Note>
 The spec is canonical; this page is orientation. The spec is generated from the route declarations the server registers, and a test holds the two one-to-one, so it cannot drift from the server. `llms.txt` carries the operations tagged `agents`.
+
+The same document drives the [MCP server](/integration/mcp#one-source-the-openapi-document). Each agent-tier operation (the two prepares and `POST /agent/metadata`) declares its security as `agentBearer` (a bearer from `/agent/session` or Sign-In with Ethereum) or `agentOAuth` with the `prepare` scope (a chat host's sign-in), and `x-mcp-tools` on an operation names the MCP tools that call it.
 </Note>
 
 ## Budgets
@@ -57,7 +62,7 @@ Branch on status and `code`, never on `message`.
 |---|---|---|---|
 | `invalid_request` | 400 | malformed address, interval or parameter | fix; do not retry unchanged |
 | `validation_failed` | 400 | body failed schema - `detail` names fields | fix the named fields |
-| `unknown_chain` | 400 | not `base` / `robinhood` (8453 / 4663) | use one of those |
+| `unknown_chain` | 400 | not `base` / `robinhood` / `arc` (8453 / 4663 / 5042) | use one of those |
 | `unauthorized` | 401 | signature absent, expired or already used | mint a fresh session |
 | `forbidden` | 403 | bearer lacks the scope, or creator is not the bearer's wallet | sign the right `action`; launch as yourself |
 | `not_found` | 404 | no row | verify; do not loop |
@@ -66,7 +71,6 @@ Branch on status and `code`, never on `message`.
 | `rate_limited` | 429 | budget exhausted | wait `retryAfter`; never map to empty |
 | `internal` | 500 | unexpected fault | retry once |
 | `unavailable` | 503 | dependency down, or launching closed | capped backoff |
-| `payment_required` | 402 | **reserved, inert** | handle early; will carry an `accepts` array naming an x402 scheme |
 
 Never sign past `expiresAtBlock` - re-prepare instead.
 
@@ -85,7 +89,7 @@ POST /api/v1/agent/session
 
 | Typed data | |
 |---|---|
-| Domain | `{ name: "BaseStonk", version: "1", chainId: 8453 }` - or `4663`; either is accepted |
+| Domain | `{ name: "BaseStonk", version: "1", chainId: 8453 }` - or `4663` or `5042`; any of the three is accepted |
 | Type | `Authorization { action: string, address: address, expiresAt: uint256, detail: string }` |
 | `action` | `agent:session` for read · `agent:session:prepare` for read + `/prepare` |
 | `detail` | empty |
@@ -122,7 +126,7 @@ POST /api/v1/auth/siwe
 |---|---|
 | domain | `basestonk.io`, `www.basestonk.io` or `api.basestonk.io` |
 | URI | `https://` on that same domain |
-| Chain ID | `8453` or `4663` |
+| Chain ID | `8453`, `4663` or `5042` |
 | Nonce | from `/siwe/nonce` |
 | Resources | one `urn:basestonk:scope:<scope>` line per scope granted |
 
@@ -155,9 +159,17 @@ session that needs it.
 
 ## Prepared transactions
 
-Both endpoints need the `prepare` scope and take `chainId` in the body
-(`8453` or `4663`; absent means Base). `tx.chainId` echoes it; `tx.to`
-is that chain's launcher or router.
+Both endpoints need the `prepare` scope and take `chainId` in the body;
+absent means Base. `tx.chainId` echoes it; `tx.to` is that chain's
+launcher or router.
+
+| `chainId` | `/launch/prepare` | `/trade/prepare` |
+|---|---|---|
+| `8453` Base | ✓ | ✓ |
+| `4663` Robinhood Chain | ✓ | ✓ |
+| `5042` Arc | refused - launch on Arc from the [create page](https://basestonk.io/create) | ✓ |
+
+Any other id is `400 unknown_chain`.
 
 ```json
 {
@@ -199,7 +211,8 @@ The chain and the pair decide the leg; `intent.leg` names it:
 |---|---|---|---|---|
 | `direct` | Base | a pair the oracle registry has a feed for | the launcher's registry | generation, priceable now, salt sorts below pair, address free, `eth_call`, gas |
 | `gated` | Base | **any token with no feed** - an ecosystem token, or any ERC-20 with a real market the creator nominates | a route the RoutedQuoteGate re-verifies hop by hop. Intent adds `route`, `issuerFactory` (zero for a non-ecosystem pair), `startSqrtPriceX96`, `impliedCapUsd`; `gate_admits` fails when the cap is outside the band | as above |
-| Robinhood | 4663 | USDG, WETH, any admitted Robinhood stock | `RhPairRegistry` | `pair_admitted`, `checkpoint`, `simulated`, `gas_estimated`, `dev_buy_denominated` |
+| `b20` | Base | a B20 wrapped equity (address prefix `0xb2000000`, NVDAc and the rest) | the B20 launcher | as above. A B20 launch carries no vesting, sniper window, holder rewards, max wallet or basket; asking for any is a `422`, never silently dropped |
+| Robinhood | 4663 | USDG, WETH, any admitted Robinhood stock. `marketCapUsd` \$250 - \$15,000 | `RhPairRegistry` | `pair_admitted`, `checkpoint`, `simulated`, `gas_estimated`, `dev_buy_denominated` |
 
 A pair that is neither registered nor routable is a **422 with `tx.data`
 empty** - nothing to sign. On Robinhood Chain a v4-priced pair needs a
@@ -234,6 +247,11 @@ refused: the empty side has nothing to sell into.
 ```
 
 Your key never leaves your process. This API never learns it exists.
+
+Want a person to sign instead? The [MCP agent tier](/integration/mcp#signing-what-an-agent-prepared)
+wraps the same answer with a `basestonk.io/sign#…` link that carries these
+exact bytes; the page decodes them, checks they go to a BaseStonk launcher
+or router, and only then offers the prepared-for wallet a button.
 
 <Note>
 The CDN bot-scores datacenter traffic and can challenge **at the edge**, before the API sees the request. The tell: a `403` with no JSON `error.code`. Every refusal this API issues is JSON. A carve-out for `/api/v1` is pending.

@@ -13,7 +13,10 @@ There are two servers.
 | Server | URL | Sign-in | Adds |
 |---|---|---|---|
 | Read | `https://api.basestonk.io/mcp` | none | eleven read tools, three prompts, four resources, one card |
-| Agent tier | `https://api.basestonk.io/mcp/agent` | OAuth, or a bearer | the same, plus `prepare_launch`, `prepare_trade` and `pin_metadata` |
+| Agent tier | `https://api.basestonk.io/mcp/agent` | OAuth, or a bearer | the same, plus `prepare_launch`, `prepare_trade` and `pin_metadata`: fourteen tools |
+
+Both are free. There is no key, no plan and no charge, on either server or
+on the API underneath.
 
 <Warning>
 **Neither server signs, relays or broadcasts.** The read server returns
@@ -24,48 +27,70 @@ or anywhere else. No tool holds a key or asks for one.
 
 ## Connect
 
-### By URL
-
-No install. Add a connector that points at the server.
-
-| App | Where |
-|---|---|
-| Claude (web and desktop) | Settings, Connectors, **Add custom connector**, then the URL |
-| ChatGPT | Settings, Connectors, Advanced, **Developer mode**, then add the URL |
+No install. Every client below adds BaseStonk by URL.
 
 ```text
 https://api.basestonk.io/mcp          # read, no authentication
 https://api.basestonk.io/mcp/agent    # agent tier, asks you to sign in
 ```
 
-The transport is streamable HTTP. Every request is a `POST` and every
-answer is one JSON body; nothing streams. The server keeps no session, so
-2025 clients and 2026-07-28 clients both work against the same URL.
+<Note>
+BaseStonk is not listed in Claude's connector directory or in ChatGPT's app
+directory. Add it by URL as below.
+</Note>
 
-### From source, over stdio
+### Claude
 
-The package is `@basestonk/mcp` and its binary is `basestonk-mcp`. It is
-not on npm. To run it locally, clone the repository and point the client
-at the source file with [Bun](https://bun.sh):
+One click opens Claude's **Add custom connector** dialog with the name and
+URL filled in:
+
+| | Read | Agent tier |
+|---|---|---|
+| For yourself | [Add BaseStonk](https://claude.ai/customize/connectors?modal=add-custom-connector&connectorName=BaseStonk&connectorUrl=https%3A%2F%2Fapi.basestonk.io%2Fmcp) | [Add BaseStonk Agent](https://claude.ai/customize/connectors?modal=add-custom-connector&connectorName=BaseStonk%20Agent&connectorUrl=https%3A%2F%2Fapi.basestonk.io%2Fmcp%2Fagent) |
+| For an organisation (admins) | [Add for the org](https://claude.ai/admin-settings/connectors?modal=add-custom-connector&connectorName=BaseStonk&connectorUrl=https%3A%2F%2Fapi.basestonk.io%2Fmcp) | [Add for the org](https://claude.ai/admin-settings/connectors?modal=add-custom-connector&connectorName=BaseStonk%20Agent&connectorUrl=https%3A%2F%2Fapi.basestonk.io%2Fmcp%2Fagent) |
+
+Or by hand: Settings, Connectors, **Add custom connector**, then the URL.
+Claude Desktop uses the same connectors as Claude on the web. The agent tier
+then shows a **Connect** button that runs the [sign-in](#sign-in).
+
+### Claude Code
+
+```bash
+claude mcp add --transport http basestonk https://api.basestonk.io/mcp
+claude mcp add --transport http basestonk-agent https://api.basestonk.io/mcp/agent
+```
+
+The second one signs in through `/mcp` inside Claude Code, which opens the
+same consent page in your browser.
+
+### ChatGPT
+
+Settings, Connectors, Advanced, **Developer mode**, then create a connector
+with the URL. The agent tier asks you to sign in when it is added.
+
+### Cursor
+
+In `~/.cursor/mcp.json`, or `.cursor/mcp.json` in a project:
 
 ```json
 {
   "mcpServers": {
-    "basestonk": {
-      "command": "bun",
-      "args": ["/path/to/repo/apps/mcp/src/cli.ts"]
-    }
+    "basestonk": { "url": "https://api.basestonk.io/mcp" }
   }
 }
 ```
 
-`bun run --filter @basestonk/mcp build` writes `dist/cli.js`, which runs
-under Node 18 or later. The stdio server serves the same tools as the URL.
+### Any other client
 
-| Variable | Effect |
-|---|---|
-| `BSTONK_API_URL` | read from another API origin. Default `https://api.basestonk.io` |
-| `BASESTONK_AGENT_TOKEN` | a bearer with the `prepare` scope. The binary asks `/api/v1/agent/whoami` who it belongs to and serves the agent tier for that wallet. A bearer it cannot verify, or one without `prepare`, gets the read tools and a line on stderr saying why |
+The transport is streamable HTTP. Every request is a `POST` and every
+answer is one JSON body; nothing streams. The server keeps no session, so
+2025 clients and 2026-07-28 clients both work against the same URL.
+
+### Over stdio
+
+The package would be `@basestonk/mcp`, binary `basestonk-mcp`. **It is not
+published on npm yet**, so there is no `npx` or `bunx` command that works
+today. Use the URL.
 
 ## Read tools
 
@@ -133,20 +158,36 @@ stored server side. It stops being checked seven days after the draft.
 | launch | looks for a token launched since the draft with the same chain, exact name, exact ticker and pair. `done` returns the new address. If the person changed any of those on the form, it will not match and says so |
 | buy | needs `wallet`, because a buy on a public pool cannot be tied to a draft any other way. `done` returns the transaction hashes of that wallet's buys since the draft |
 
-## Cards
+## The card
 
-In a host that renders MCP Apps, three tools draw a card from
-`ui://basestonk/app.html`. A host that does not ignores it and reads the
-text.
+In a host that renders MCP Apps, three tools draw a card: `get_token`,
+`draft_launch` and `draft_trade` name `ui://basestonk/app.html`
+(`text/html;profile=mcp-app`) as their view. A host that does not render
+it ignores it and reads the text.
+
+<Frame caption="get_token: price, 24h chart with interval tabs, market data, fees">
+  <img src="/images/mcp-card-token.webp" alt="The BaseStonk card for $BSTONK: price, a 24-hour chart with 24h, 1h, 15m and 5m tabs, market cap, volume, liquidity, holders, fees and an Open on basestonk.io button" />
+</Frame>
 
 | Tool | Card |
 |---|---|
-| `get_token` | price, a live chart (24h, with 1h, 15m and 5m tabs fetched through `get_candles`), market cap, volume, liquidity, holders, fees, and an **Open on basestonk.io** button |
+| `get_token` | price, a chart (24h from the tool result; the 1h, 15m and 5m tabs each call `get_candles` through the host), market cap, volume, liquidity, holders, fees, and an **Open on basestonk.io** button |
 | `draft_launch` | a review card: pair, opening market cap, **Review & sign on basestonk.io**, and **Check status**, which calls `get_intent`. After the link is opened it checks every 15 seconds for ten minutes |
 | `draft_trade` | the same for a buy: amount, price, market cap, tax, and a field for the buyer wallet so **Check status** can confirm it |
 
+<Frame caption="draft_trade: a buy to review, and a status check once it is signed">
+  <img src="/images/mcp-card-buy.webp" alt="The BaseStonk buy review card: amount in USDC, price, market cap, tax, a Review and sign on basestonk.io button, a wallet field and a Check status button" />
+</Frame>
+
+<Frame caption="draft_launch after Check status: get_intent found the launch on chain">
+  <img src="/images/mcp-card-launch-done.webp" alt="The BaseStonk launch review card after Check status, reading Done, launched at the new token's address, with a View button" />
+</Frame>
+
 The card loads nothing from the network. Its content security policy
-lists no domains; every number arrives in the tool result.
+lists no domains (`connectDomains` and `resourceDomains` are both empty);
+every number arrives in a tool result. The only tools it calls are
+`get_candles` and `get_intent`, and it calls them through the host; its
+buttons ask the host to open basestonk.io links.
 
 ## Prompts and resources
 
@@ -162,8 +203,11 @@ Each prompt attaches the honesty guide before its instructions.
 |---|---|
 | `basestonk://guide/honesty` | how to read the numbers: fully diluted caps, unknowns, nested fees, in-kind dividends, shared tickers, impersonation |
 | `basestonk://chains` | the chains and how a token page is addressed on each |
-| `basestonk://pairs/{chain}` | every registered launch pair on a chain, with address, kind and price |
+| `basestonk://pairs/{chain}` | every registered launch pair on a chain, with address, kind and price. Listed for `base`, `robinhood` and `arc` |
 | `basestonk://token/{chain}/{address}` | one token's record, the same one `get_token` returns |
+
+The card itself, `ui://basestonk/app.html`, is a fifth resource, read by
+the host rather than the model.
 
 The server sends cache hints: the tool, prompt and resource lists for ten
 minutes, a resource read for ten seconds. On the agent tier the tool list
@@ -175,14 +219,34 @@ is marked private, because it names your wallet.
 
 | Tool | Does | Key inputs |
 |---|---|---|
-| `prepare_launch` | an unsigned launch transaction, with checks run against the chain | `name`, `symbol`, `pairToken`, `marketCapUsd` (required); `chainId`, `metadataUri`, `devBuyPair`, `buyTaxBps`, `sellTaxBps`, `burnBps`, `liquidityBps`, `rewardsBps`, `payees`, `basket`, `maxWalletBps`, `vestDays`, `cliffDays`, `sniperSeconds`, `renounceBasket` |
+| `prepare_launch` | an unsigned launch transaction, with checks run against the chain | `name`, `symbol`, `pairToken`, `marketCapUsd` (required); `chainId`, `metadataUri`, `creator`, `devBuyPair`, `buyTaxBps`, `sellTaxBps`, `burnBps`, `liquidityBps`, `rewardsBps`, `payees`, `basket`, `maxWalletBps`, `vestDays`, `cliffDays`, `sniperSeconds`, `renounceBasket` |
 | `prepare_trade` | an unsigned swap through the venue router, quoted at the token's own tax | `token`, `side` (`buy` or `sell`), `amountIn` (raw units of what you spend); `chainId`, `slippageBps` (300 default) |
 | `pin_metadata` | pins a metadata document and returns its `ipfs://` URI for `prepare_launch` | `name`, `symbol`; `description`, `image`, `links` |
 
-`chainId` is `8453` (Base, the default) or `4663` (Robinhood Chain). The
-inputs are the ones the [prepare endpoints](/integration/agents#prepared-transactions)
-take; in the OpenAPI document each of those operations names the tool that
-calls it under `x-mcp-tools`.
+`prepare_launch` and `prepare_trade` are annotated read-only: they read the
+chain and return bytes. `pin_metadata` is not, because it writes a document
+to IPFS; it is idempotent, since the same document pins to the same URI.
+
+| `chainId` | `prepare_launch` | `prepare_trade` |
+|---|---|---|
+| `8453` Base (the default) | ✓ | ✓ |
+| `4663` Robinhood Chain | ✓ | ✓ |
+| `5042` Arc | refused: launch on Arc from the [create page](https://basestonk.io/create) | ✓ |
+
+### One source: the OpenAPI document
+
+The agent tools are not a second description of the API. Their inputs are
+generated from the request bodies of the
+[prepare endpoints](/integration/agents#prepared-transactions) in
+`https://api.basestonk.io/api/v1/openapi.json`. In that document:
+
+- each of the three operations behind them declares its security as
+  `agentBearer` (a bearer you minted) **or** `agentOAuth` with the
+  `prepare` scope (the sign-in below);
+- sixteen operations carry `x-mcp-tools`, naming every MCP tool that calls
+  them. `POST /api/v1/agent/launch/prepare` names `prepare_launch`,
+  `trade/prepare` names `prepare_trade`, `agent/metadata` names
+  `pin_metadata`, and the reads name the read tools built on them.
 
 A prepare tool answers with:
 
@@ -194,7 +258,7 @@ A prepare tool answers with:
 | `approvalTx` | send this first and wait for it to confirm. It can appear on a refusal too, when the missing allowance is the reason; prepare again after it confirms |
 | `tx` | the unsigned transaction. `null` when refused, so there is nothing to send by mistake |
 | `expiresAtBlock` | prepare again after this block rather than send a stale transaction |
-| `signUrl` | a basestonk.io/sign link carrying exactly these bytes, for a person to sign. `null` when refused |
+| `signUrl` | a `basestonk.io/sign#…` link carrying exactly these bytes, for a person to sign. `null` when refused |
 
 ### Sign in
 
@@ -203,9 +267,10 @@ in with a button.
 
 1. Add `https://api.basestonk.io/mcp/agent` as a connector.
 2. The host sends you to `basestonk.io/connect-agent`, which names the app
-   and where it will return you.
+   and the host it will return you to.
 3. Connect your wallet and approve. The wallet signs `agent:oauth` over
-   that app and that one request. Nothing else can spend the signature.
+   that app and that one request's PKCE challenge. The signature works
+   once; nothing else can spend it.
 4. You return to the app, which now holds a token for your wallet.
 
 An agent that holds its own key can skip OAuth. Mint a bearer with
@@ -227,9 +292,9 @@ the `prepare` scope named in the message, and send it as
 
 | | |
 |---|---|
-| Access token | 1 hour, then the app refreshes it |
+| Access token | 1 hour (`expires_in: 3600`), then the app refreshes it |
 | Refresh token | works once; each refresh issues a new one |
-| The grant | ends **seven days after you approve**, however often it is refreshed. Then the app asks you again |
+| The grant | ends **seven days after you sign in**. Refreshing does not extend it: the end date is fixed when the app first exchanges its code and carried through every refresh. Then the app asks you again |
 | To end it sooner | disconnect BaseStonk in the app. It stops refreshing, and the current token runs out within the hour |
 
 ### For client developers
@@ -238,6 +303,7 @@ the `prepare` scope named in the message, and send it as
 |---|---|
 | Protected resource metadata | `https://api.basestonk.io/.well-known/oauth-protected-resource/mcp/agent` |
 | Authorization server metadata | `https://api.basestonk.io/.well-known/oauth-authorization-server` |
+| Issuer | `https://api.basestonk.io` |
 | Authorization endpoint | `https://basestonk.io/connect-agent` |
 | Token endpoint | `https://api.basestonk.io/oauth/token` |
 | Registration endpoint | `https://api.basestonk.io/oauth/register` |
@@ -245,23 +311,39 @@ the `prepare` scope named in the message, and send it as
 | PKCE | required, `S256` only |
 | Client authentication | `none` |
 | Scope | `prepare` |
-| `resource` | if sent, must be `https://api.basestonk.io/mcp/agent` |
+| `resource` | if sent, must be `https://api.basestonk.io/mcp/agent`; anything else is `invalid_target` |
 
-A client identifies itself one of two ways. A **Client ID Metadata
-Document**: `client_id` is a plain `https` URL on a public host whose JSON
-names itself as `client_id` and lists `redirect_uris`, fetched within five
-seconds and ten kilobytes. Or **dynamic registration** at `/oauth/register`
-with 1 to 5 `redirect_uris`, each `https` or loopback `http`, no fragment.
+A client identifies itself one of two ways.
+
+| | Used by | Rules |
+|---|---|---|
+| **Client ID Metadata Document** | Claude | `client_id` is a plain `https` URL on a public host whose JSON names itself as `client_id` and lists `redirect_uris`. The host must resolve only to public addresses, and the fetch connects to the address that passed that check (the DNS answer is pinned, so a second lookup cannot redirect it), follows no redirects, and is cut at five seconds and ten kilobytes. A document is cached ten minutes |
+| **Dynamic registration** | ChatGPT, and any client without a metadata document | `POST /oauth/register` with 1 to 5 `redirect_uris`, each `https` or loopback `http`, no fragment. The `client_id` returned is the registration itself, sealed; nothing is stored |
+
 An authorization code is single use and lasts 60 seconds. The redirect
-carries `code`, your `state`, and `iss`.
+carries `code`, your `state`, and `iss` (`https://api.basestonk.io`), so a
+client can check which server answered.
 
 ## Signing what an agent prepared
 
-`signUrl` opens `https://basestonk.io/sign#…` with the transaction in the
-URL fragment, so no server sees or stores it. The page:
+`signUrl` opens `https://basestonk.io/sign#…`. The fragment is the
+transaction, base64url JSON (`v`, `kind`, `chainId`, `from`, `approvalTx`,
+`tx`, `expiresAtBlock`). A fragment never leaves the browser, so no server
+sees or stores it.
 
-- refuses anything not addressed to a launcher or router the site itself uses
-- shows the call decoded from the bytes, never the agent's description of it
+The page decodes the payload and checks it before it shows a button:
+
+- the chain must be one BaseStonk runs on
+- `tx` must go to a launcher or router the site itself sends to on that
+  chain today (a live launch generation, the live B20 launcher, or the
+  venue router), and `kind` must match which it is
+- the calldata must decode against that contract's own ABI, and what you
+  are shown is that decoded call, never the agent's description of it
+- an approval must be an ERC-20 `approve` whose spender is one of those
+  same contracts, with no value attached
+
+Anything else is refused and nothing is sent. Then the page:
+
 - simulates the first step from the prepared-for wallet before you sign
 - refuses to send from any other wallet, or after `expiresAtBlock`
 - sends the approval first, then the transaction, and links the new token after a launch
@@ -272,7 +354,7 @@ URL fragment, so no server sees or stores it. The page:
 |---|---|---|
 | `/mcp` | 60 requests / min | IP |
 | `/mcp/agent`, no valid bearer | 60 requests / min | IP |
-| `/mcp/agent`, signed in | the agent tier's wallet budget | your wallet |
+| `/mcp/agent`, signed in | 1,800 requests / min | your wallet |
 | `/oauth/register` | 20 / min | IP |
 | `/oauth/*` | 60 / min | IP |
 
@@ -296,6 +378,6 @@ At the HTTP layer:
 | Status | When |
 |---|---|
 | `405` | anything but `POST`. JSON-RPC error `-32000` |
-| `401` | `/mcp/agent` with no bearer, or an expired one. `WWW-Authenticate` names `resource_metadata` |
-| `403` | `/mcp/agent` with a bearer that lacks the `prepare` scope |
+| `401` | `/mcp/agent` with no bearer, or an expired one. JSON-RPC error `-32001`; `WWW-Authenticate` names `resource_metadata` and `scope="prepare"` |
+| `403` | `/mcp/agent` with a bearer that lacks the `prepare` scope (`insufficient_scope`) |
 | `429` | over a lane. `retry-after` says how long |

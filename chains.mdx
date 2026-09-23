@@ -76,7 +76,9 @@ assets on the same chain, as on Base.
 
 The [REST API](/integration/api) takes `chain=robinhood` and `chain=arc`
 wherever it takes `chain=base`, and the [agent API](/integration/agents)
-takes `chainId: 4663` in the body. Robinhood Chain addresses are on the
+takes `chainId: 4663` in the body for launches and trades, and
+`chainId: 5042` for trades (an Arc launch is prepared on the create page,
+not by the agent API). Robinhood Chain addresses are on the
 [contract reference](/integration/contracts#robinhood-chain-4663). The
 launch tuple has no `vaultShareBps`, `issuers` or `renounceBasket` -
 [on-chain](/integration/onchain#robinhood-chain). Arc uses the same
