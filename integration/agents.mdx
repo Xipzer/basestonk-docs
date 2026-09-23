@@ -202,6 +202,8 @@ POST /api/v1/agent/launch/prepare
 }
 ```
 
+`"standard": "b20"` asks for a B20 token against a pair that is not itself a B20 (WETH, USDC, any oracle-priced pair); a B20 pair always launches B20. Omit it for an ordinary launch.
+
 The creator is always the bearer's wallet. `devBuyPair` is raw pair
 units; the intent reports it as amount, USD and `percentOfSupplyAtOpen`.
 
@@ -211,7 +213,7 @@ The chain and the pair decide the leg; `intent.leg` names it:
 |---|---|---|---|---|
 | `direct` | Base | a pair the oracle registry has a feed for | the launcher's registry | generation, priceable now, salt sorts below pair, address free, `eth_call`, gas |
 | `gated` | Base | **any token with no feed** - an ecosystem token, or any ERC-20 with a real market the creator nominates | a route the RoutedQuoteGate re-verifies hop by hop. Intent adds `route`, `issuerFactory` (zero for a non-ecosystem pair), `startSqrtPriceX96`, `impliedCapUsd`; `gate_admits` fails when the cap is outside the band | as above |
-| `b20` | Base | a B20 wrapped equity (address prefix `0xb2000000`, NVDAc and the rest) | the B20 launcher | as above. A B20 launch carries no vesting, sniper window, holder rewards, max wallet or basket; asking for any is a `422`, never silently dropped |
+| `b20` | Base | a B20 wrapped equity (address prefix `0xb2000000`, NVDAc and the rest), **or any oracle-priced pair with `standard: "b20"`** | the B20 launcher (V6B: the token on either side of the pool) | as above. A B20 launch carries no vesting, sniper window, holder rewards, max wallet or basket; asking for any is a `422`, never silently dropped |
 | Robinhood | 4663 | USDG, WETH, any admitted Robinhood stock. `marketCapUsd` \$250 - \$15,000 | `RhPairRegistry` | `pair_admitted`, `checkpoint`, `simulated`, `gas_estimated`, `dev_buy_denominated` |
 
 A pair that is neither registered nor routable is a **422 with `tx.data`

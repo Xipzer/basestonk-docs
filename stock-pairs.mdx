@@ -93,7 +93,9 @@ tokenized stock through its [basket](/dividend-baskets).
 </Note>
 
 <Accordion title="B20 mode (Base only)">
-When the pair is a Coinbase B20, the form offers to launch your token **as a B20** through Base's factory precompile: fixed 1B supply, and **both the mint role and the last admin renounced inside the launch transaction**. Nobody can mint, pause or freeze it - verify the renounce on Basescan.
+On Base the form offers to launch your token **as a B20** through Base's factory precompile - against **any oracle-priced pair**: WETH, USDC, cbBTC, the stocks, \$BSTONK. Until 2026-09-23 this was offered only against a Coinbase B20 stock. Your token gets a `0xB2000000…` address like the Coinbase stocks, a fixed 1B supply, and **both the mint role and the last admin renounced inside the launch transaction**. Nobody can mint, pause or freeze it - verify the renounce on Basescan.
+
+It is not offered where the pair has no oracle feed - an ecosystem or nominated token priced by a route, or one of the directly priced wrapped listings (wtTSM, wtAMD and the rest): the B20 launcher opens from the oracle price only. The form shows the B20 option only where it can launch.
 
 | B20 launches keep | B20 launches lose |
 |---|---|
