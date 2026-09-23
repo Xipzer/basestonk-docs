@@ -16,7 +16,7 @@ trade. Nothing to claim. Nothing to trust.
     Up to ten assets with weights, from the pairs the chain admits.
   </Step>
   <Step title="A share of every trade flows in">
-    The rewards percentage, taken inside the swap.
+    The rewards percentage, taken inside the swap from what the trade pays out: the pair on a sell, the token itself on a buy.
   </Step>
   <Step title="The contracts buy the assets">
     Through real markets, with a floor so holders are never quietly shortchanged. No bot, no middleman, no conversion fee.
@@ -28,7 +28,7 @@ trade. Nothing to claim. Nothing to trust.
 
 The menu is the chain's admitted pairs: on Base, tokenized stocks, ETFs,
 cbBTC, \$BSTONK and several hundred ecosystem tokens; on Robinhood Chain,
-the 194 Robinhood stocks, USDG and WETH. With no basket, dividends are
+the Robinhood stock tokens, USDG and WETH. With no basket, dividends are
 paid in the pair.
 
 ## What it adds up to
@@ -41,7 +41,9 @@ At a 3% holder share:
 | \$500k | ~\$5.5M | 275% | 110% | 55% |
 | \$1M | ~\$11M | 550% | 220% | 110% |
 
-Paid in **the assets themselves** - real tokenized stock, not more of the token.
+The share taken from sells is paid in **the assets themselves**, real
+tokenized stock. The share taken from buys arrives as the token, and on
+Base it is paid to holders as the token.
 
 <Note>
 Arithmetic, not a promise. Volume is the input nobody can guarantee. The percentage, the immutable split and the on-chain floor are what the contracts guarantee.
@@ -59,8 +61,8 @@ The basket's **composition** sits behind a seat. The **percentage of volume** do
 
 | Closing the seat | Base | Robinhood Chain |
 |---|---|---|
-| At launch | tick *renounce basket control* | not on the form |
-| Later | `renounceBasket()` | hand the seat to a burn address |
+| At launch | tick *renounce basket control* | not on the form (same on Arc) |
+| Later | `renounceBasket()` | hand the seat to a burn address (same on Arc) |
 
 Whether a seat is live is public on-chain state. Rebuilding a basket
 changes where *future* dividends go; value in flight still reaches

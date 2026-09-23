@@ -7,6 +7,10 @@ icon: "robot"
 Versioned paths, coded errors, a published OpenAPI document, and two
 endpoints that assemble a transaction for **your** key to sign.
 
+Working from Claude, ChatGPT or another MCP client? The same prepare
+endpoints are tools on the [MCP server](/integration/mcp), with a sign-in
+button instead of a hand-minted session.
+
 <Warning>
 **BaseStonk never signs, relays or broadcasts.** `/prepare` returns an unsigned transaction - `to`, `data`, `value`, `chainId`. Sending is yours. A client waiting for a hash from this API waits forever.
 </Warning>
@@ -35,9 +39,9 @@ A bearer buys budget; it never gates. Every read works without one.
 
 | Tier | Budget | Keyed to |
 |---|---|---|
-| anonymous | 120 units / min | IP (IPv4 address or IPv6 /64) |
-| bearer | 360 units / min | your wallet, per lane |
-| envelope | 360 units / min | your IP, across every lane and wallet |
+| anonymous | 1,500 units / 5 min | IP (IPv4 address or IPv6 /64) |
+| bearer | 1,800 units / 5 min | your wallet, per lane |
+| envelope | 1,800 units / 5 min | your IP, across every lane and wallet |
 | minting | 3 sessions / hour | IP |
 
 A bearer spends from the wallet bucket *and* the envelope; the tighter

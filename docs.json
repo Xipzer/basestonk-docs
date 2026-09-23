@@ -52,6 +52,7 @@
         "pages": [
           "integration/api",
           "integration/agents",
+          "integration/mcp",
           "integration/trading-bots",
           "integration/onchain",
           "integration/contracts"

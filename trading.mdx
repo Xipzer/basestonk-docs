@@ -11,19 +11,25 @@ see and which network the wallet signs on.
 
 | Chain | Pay in |
 |---|---|
-| Base | ETH, WETH, USDC |
-| Robinhood Chain | ETH, WETH, USDG |
+| Base | ETH, WETH, USDC, or the token's pair |
+| Robinhood Chain | ETH, WETH, or the token's pair |
+| Arc | USDC, or the token's pair |
 
-The panel routes your asset into the token's pair through an aggregator,
-then completes the pool swap - one flow, one confirmation. Most stock
-pairs route from ETH too; the exception is the Coinbase B20 stocks on Base
-with no on-chain market, where you must hold the stock already and the
-panel says so.
+Paying in the pair is one swap. Paying in anything else, the panel first
+routes your asset into the pair through an aggregator, then completes the
+pool swap: two swaps in one flow. Most stock pairs route from ETH too; the
+exception is the Coinbase B20 stocks on Base with no on-chain market,
+where you must hold the stock already and the panel says so.
+
+Before you press the button, the panel shows **Wallet signatures**: how
+many times your wallet will ask you to sign, counting any token approval
+it needs first.
 
 ## What you pay
 
 The token's tax - buy and sell rates set at launch, shown on its page,
-taken inside the swap. There are no platform charges on top. Price impact
+taken inside the swap from what you receive: in the token when you buy,
+in the pair when you sell. There are no platform charges on top. Price impact
 is the pool's own curve; split a large order rather than raising
 slippage.
 
@@ -49,7 +55,8 @@ Not a honeypot, nothing is locked. Selling in smaller pieces always works, and t
 
 Live candles, trades, holders and tax mechanics on every token page, from
 BaseStonk's own indexer - the same numbers the [API](/integration/api)
-serves.
+serves. On Base, a new trade shows in the trade feed and on the chart
+within a couple of seconds of its block.
 
 <AccordionGroup>
 <Accordion title="Price impact, and why size matters more than slippage">

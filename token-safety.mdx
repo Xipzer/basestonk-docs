@@ -13,7 +13,7 @@ Most are heuristics meeting an architecture they were not written for.
 | **Creator can move funds** | **False** | an external call on every transfer - the dividend tracker notification |
 | **Unlocked liquidity / 0% locked** | **Model mismatch** | v4 has no LP token to lock or burn; the position lives in the PoolManager |
 | **High transfer fees** | **Usually true** | the token's tax plus the pool fee - the creator's published choice |
-| **Unverified contract** | **False** | every active contract is verified on its explorer |
+| **Unverified contract** | **False on Base and Robinhood Chain; true on Arc** | every active Base and Robinhood Chain contract is verified on its explorer. Arc's explorer cannot verify source code yet |
 | **Unverified token** | **About the list, not the token** | absent from the scanner's own curated list |
 
 ## Creator can move funds

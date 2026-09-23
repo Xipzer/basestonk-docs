@@ -5,7 +5,7 @@ description: "What a creator can change after launch, hand over, or give up - an
 icon: "sliders"
 ---
 
-Open a token you launched and press **Manage this token**, or find it
+Open a token you launched and press **Manage**, or find it
 under *Launches* in your portfolio. The page is gated by seat: it shows
 what your wallet holds a seat for, and nothing else.
 
@@ -34,10 +34,10 @@ another wallet from the same page - directly on-chain through
 
 A payee's slot is the payee's. From **Hand over your fee slot**:
 
-**Hand it over** - transfer your slot's share to another wallet
+**Hand over** - transfer your slot's share to another wallet
 (`transferPayeeSlot`). The share is unchanged; only the recipient moves.
 
-**Renounce it to holders** - give your share to the token's holders,
+**Renounce fees** - give your share to the token's holders,
 forever (`renounceFees`). On a token with dividends switched on, your
 share merges into the holders' distributor. On a token launched
 *without* dividends, the hook deploys a frozen distributor for it - that
@@ -53,7 +53,7 @@ Both act on your slot only. A token with several payees is several independent d
 Very rarely a fee payment cannot be delivered in the trade that earned
 it - a recipient that reverts on receipt, or an out-of-gas - and the hook
 parks it as a claim inside the PoolManager rather than losing it. The
-manage page shows any such balance under **Stuck fees** and collects it
+manage page shows any such balance as **You have fees waiting** and collects it
 for you: one `setOperator` approval the first time, then a claim per
 currency.
 
@@ -68,7 +68,7 @@ Under **Holder rewards**, the basket's controller can:
   paying out what it still holds; once drained, this tidies the slot
   (Base)
 - **renounce the basket** - freeze it, forever (Base). On Robinhood
-  Chain, hand the seat to a burn address instead.
+  Chain and Arc, hand the seat to a burn address instead.
 
 An empty basket pays holders in the pair. The *percentage* of volume that
 flows to holders is not on this page: it was fixed at launch.

@@ -8,8 +8,15 @@ Every trade pays the fee its creator set at launch. Transfers are free.
 The fee is taken inside the swap, so there is no route around it.
 
 <Warning>
-**The fee is a percentage of each trade, not a share of an LP fee.** A \$10,000 swap against a token routing 3% to holders sends \$300 to holders.
+**The fee is a percentage of each trade, not a share of an LP fee.** A \$10,000 swap against a token routing 3% to holders sends about \$300 to holders.
 </Warning>
+
+## What the fee is paid in
+
+The fee is taken from what the trade pays out. On a **buy**, that is the
+token being bought. On a **sell**, it is the pair. So everyone who earns a
+share of the fee, a fee address included, receives **both**: the token
+from buys and the pair from sells.
 
 ## Rates
 
@@ -29,11 +36,11 @@ A token at 1% on buys and 10% on sells pays the platform 0.5% of each buy and 1%
 
 ## Where each cut goes
 
-| Cut | Base | Robinhood Chain |
-|---|---|---|
-| Platform | \$BSTONK buyback and burn | converted to USDG, held on 4663 |
-| Creator, Simple | holders as dividends by default, half of that via the \$BSTONK basket - or one fee address | holders as dividends, or one fee address |
-| Creator, Advanced | the [wedges](/launching#the-wedges) in the shares you set | the wedges, minus the \$BSTONK basket |
+| Cut | Base | Robinhood Chain | Arc |
+|---|---|---|---|
+| Platform | \$BSTONK buyback and burn | converted to USDG, held on 4663 | converted to USDC, held on Arc |
+| Creator, Simple | your fee address by default. **Recommended** sends half to holders as dividends, half of that via the \$BSTONK basket | your fee address by default, or half to holders | your fee address by default, or half to holders |
+| Creator, Advanced | the [wedges](/launching#the-wedges) in the shares you set | the wedges, minus the \$BSTONK basket | the wedges, minus the \$BSTONK basket |
 
 Same rates, different destinations. [Why &rarr;](/chains#where-the-platforms-cut-goes)
 

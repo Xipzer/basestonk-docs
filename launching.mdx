@@ -7,7 +7,7 @@ icon: "wand-magic-sparkles"
 
 Every launch mints **1,000,000,000 tokens** and opens a Uniswap v4 pool
 with 99% of them. The pair you pick is what the chart is quoted in,
-forever. Same form on Base and Robinhood Chain - chain is the first
+forever. Same form on Base, Robinhood Chain and Arc - chain is the first
 choice, and the differences are marked below.
 
 ## What one signature does
@@ -28,7 +28,7 @@ choice, and the differences are marked below.
 |---|---|
 | Standard, Base | \$500 - \$10,000 |
 | Gated ecosystem, Base | \$250 - \$15,000 |
-| Any, Robinhood Chain | \$250 - \$15,000 |
+| Any, Robinhood Chain or Arc | \$500 - \$10,000 |
 
 Some stock pairs refuse very low caps; the form warns and shows the exact
 opening price before you sign. Not on the list? On Base you can
@@ -41,24 +41,48 @@ They differ in one thing: who sets the tax and how it is divided.
 | | Simple | Advanced |
 |---|---|---|
 | Trade fee | **1%** fixed | your own **buy** and **sell** rates, each 0 - 10% |
-| Your half goes to | holders, or one fee address | the wedges below, in shares you set |
+| Your half goes to | your fee address, or part of it to holders | the wedges below, in shares you set |
 | Everything else on the form | ✓ | ✓ |
+
+Simple starts with your whole half going to your fee address. One press
+on **Recommended** sends half of it to holders instead.
+
+## Presets
+
+Advanced starts as **Custom** at 1% buy and 1% sell, with half your share
+going to holders. You set the rates and the split yourself.
+Pick one of the **Presets** instead and it fills in both. Change either
+afterwards and the launch is Custom again.
+
+| Preset | Buy / sell tax | Your share of the fee goes to |
+|---|---|---|
+| **Holder rewards** | 3% / 3% | holders 50%, \$BSTONK basket 20%, your wallet 30% |
+| **Buyback & burn** | 3% / 3% | burn 70%, your wallet 30% |
+| **Deep liquidity** | 3% / 3% | liquidity 70%, your wallet 30% |
+| **Balanced** | 4% / 4% | holders 25%, burn 25%, liquidity 25%, your wallet 25% |
+| **Anti-dump** | 1% / 5% | holders 50%, your wallet 50% |
+
+A preset only appears where the launch can do what it describes:
+
+- Where the \$BSTONK basket is not offered (Robinhood Chain, Arc), **Holder rewards** gives that 20% to holders, so holders get 70%.
+- A B20 launch cannot pay holders, so **Holder rewards**, **Balanced** and **Anti-dump** are not offered for it.
+- **Anti-dump** needs different buy and sell rates, so it is hidden where a launcher cannot set them.
 
 ## The wedges
 
 An Advanced launch divides the creator's share among these. Each runs
 inside the swap itself; none can be changed after launch by anyone.
 
-| Wedge | Does | Base | Robinhood |
-|---|---|:-:|:-:|
-| **Payees** | up to 8 wallets, custom shares | ✓ | ✓ |
-| **Holder dividends** | every holder paid their share, automatically, in up to 10 assets the creator picked. [Baskets &rarr;](/dividend-baskets) | ✓ | ✓ |
-| **Buyback & burn** | buys the token from its own pool and burns it, in the same transaction as the trade | ✓ | ✓ |
-| **Liquidity** | deepens the pool, raising the floor under later sellers | ✓ | ✓ |
-| **\$BSTONK basket** | a share into the platform vault | ✓ | - |
+| Wedge | Does | Base | Robinhood | Arc |
+|---|---|:-:|:-:|:-:|
+| **Payees** | up to 8 payouts in all, custom shares (holder rewards and the basket each take one) | ✓ | ✓ | ✓ |
+| **Holder dividends** | every holder paid their share, automatically, in up to 10 assets the creator picked. [Baskets &rarr;](/dividend-baskets) | ✓ | ✓ | ✓ |
+| **Buyback & burn** | burns the token in the same transaction as the trade. A buy's fee arrives as the token and is burnt directly; a sell's fee buys the token back from its own pool and burns it | ✓ | ✓ | ✓ |
+| **Liquidity** | deepens the pool, raising the floor under later sellers | ✓ | ✓ | ✓ |
+| **\$BSTONK basket** | a share into the platform vault | ✓ | - | - |
 
 <Note>
-Simple launches get the dividend wedge (and on Base, the \$BSTONK basket wedge) switched on by default at the fixed 1%.
+On Base, the recommended split (Simple's **Recommended**, and where Advanced starts) sends half of the holders' share through the \$BSTONK basket.
 </Note>
 
 ## Protections
@@ -68,7 +92,7 @@ Simple launches get the dividend wedge (and on Base, the \$BSTONK basket wedge) 
 | **Max wallet** | buys that would breach the cap revert. Sells are never blocked. Creator and pool exempt. | any % |
 | **Anti-sniper toll** | buys in the opening window pay a rate that decays from up to 99% down to your buy tax. Sells never pay it. The token page shows a live meter. | window up to 30 min |
 | **Dev-buy vesting** | locks your dev buy in a vault with a public schedule. [Vesting &rarr;](/vesting) | 7 days minimum, no maximum |
-| **Renounce basket seat** | freezes the payout basket in the launch transaction | Base only - on Robinhood Chain, hand the seat to a burn address after launch |
+| **Renounce basket seat** | freezes the payout basket in the launch transaction | Base only - on Robinhood Chain and Arc, hand the seat to a burn address after launch |
 
 ## Your own buy
 
