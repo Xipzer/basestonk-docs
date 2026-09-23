@@ -12,9 +12,13 @@ Machine client? The same routes under `/api/v1` add coded errors, one
 envelope and the `/prepare` endpoints ([AI agents](/integration/agents)).
 
 The machine-readable reference is the OpenAPI 3.1 document at
-`https://api.basestonk.io/api/v1/openapi.json`, with a plain-text summary
-at `/api/v1/llms.txt` (both cached an hour). They cover the curated agent
-surface; this page covers every public read.
+`https://api.basestonk.io/api/v1/openapi.json`: every public route, 101
+operations, generated from the same route declarations the server
+registers, so it cannot list a route the server lacks or miss one it
+serves. `/api/v1/llms.txt` is the plain-text version of the operations
+tagged `agents`. Both are cached an hour. This page covers what an
+integrator reaches for; the document has the rest (referral, bridge,
+OAuth).
 
 ## The chain
 
@@ -141,9 +145,9 @@ Under `/api/v1` the same body also gains `items` (the rows again) and
 | `/basket-assets` (its `ecosystem` half) | 200 | 1000 |
 | `/creators/{address}/tokens` (`limit` only) | 200 | 500 |
 
-Two routes page by time instead: candles take `limit` (300, max 1000) and
-`before=<unix seconds>`; a wallet's trades take `limit` and `before=<ISO
-time>` and hand back `nextBefore`.
+Two routes page backwards instead: candles take `limit` (300, max 1000)
+and `before=<unix seconds>`; a wallet's trades take `limit` and
+`before=<cursor>` and hand back the next cursor as `nextBefore`.
 
 Responses evolve **additively**. Ignore unknown fields. `taxBps` is
 backfilled for pre-V6 launches whose `buyTaxBps`/`sellTaxBps` are null;
@@ -186,7 +190,10 @@ GET /api/launchpad/tokens/{address}/candles?chain={chain}&interval=1m
 ```
 
 `{ interval, candles: [{ t, o, h, l, c, v }] }`, oldest first, `t` in unix
-seconds. `interval`: `1s` `5s` `15s` `1m` `5m` `15m` `1h` (default `5m`).
+seconds. `interval`: `1s` `1m` `5m` `15m` `1h` `4h` `1d` (default `5m`);
+anything else is `400 bad interval`. `limit` is 300 by default, 1000 at
+most. `1s` is built from the trades themselves; `1m` to `15m` are rolled up
+from stored one-minute bars, `1h` and wider from hourly ones.
 `before=<unix seconds>` pages backwards through history; an empty page is
 the start of it. The newest bar is marked to the token's current price, and
 a token that has never traded gets flat zero-volume bars at that price.
@@ -225,19 +232,30 @@ A wallet's trades are its activity feed, newest first:
 | Param | |
 |---|---|
 | `limit` | 1-100, default 50 |
-| `before` | ISO time; pass the previous page's `nextBefore` |
+| `before` | opaque cursor; pass the previous page's `nextBefore` unchanged |
 
 The answer is `{ trades: [...], nextBefore }`. Each row carries `token`,
 `symbol`, `name`, `imageUrl`, `side`, `amountToken`, `volumeUsd`,
 `priceUsd`, `txHash` and `createdAt`, priced as the trade was stamped.
-`nextBefore` is `null` on the last page. Trades in one block share a
-timestamp, so a full page takes the rest of its last second too and may run
-a few rows past `limit`.
+
+A page never holds more than `limit` rows. The cursor marks the last row
+by its time to the microsecond and its id, so trades that share a block
+split across pages with none lost or repeated. `nextBefore` is `null` when
+there is nothing older. Treat it as opaque: a cursor that does not decode
+is `400 invalid before`. A bare ISO time is still accepted, for clients
+holding one from before the cursor, and pages from that instant.
 
 Rewards are dividends received across every token, or on one token with
 the live pending amount (`404` if the token pays none; `pending` is `null`
 when the distributor could not be read, never a guessed zero; cached
 privately 10 seconds).
+
+```bash
+GET /api/profile/{address}
+```
+
+A creator's public profile: display name, bio, avatar and linked Telegram,
+or `profile: null`.
 
 ### Pairs and pricing
 
@@ -395,6 +413,34 @@ launcher - the preset is a promise the form keeps, not a rule the chain does.
 
 The `draft_launch` [MCP](/integration/mcp) tool takes the same `template`.
 
+### Writes
+
+```bash
+POST /api/launchpad/images
+POST /api/launchpad/metadata
+POST /api/launchpad/tokens/{address}/metadata?chain={chain}
+POST /api/launchpad/tokens/{address}/controller?chain={chain}
+GET  /api/launchpad/stored/{id}
+```
+
+The launch and token-page writes, and every one names a wallet.
+`images` pins a `file` field (PNG, JPEG, WebP or GIF, up to 5MB) and
+`metadata` pins a token's metadata document; both answer with `uri` and
+`gateway` and spend the `uploads` lane. `tokens/{address}/metadata` is the page
+controller's edit of description, image and links, merged onto what is
+shown; `controller` hands the page to `{ "to": "0x…" }`. `stored` serves an
+upload IPFS did not take.
+
+Each write accepts either proof of the wallet:
+
+| Send | Signs for |
+|---|---|
+| `x-wallet-address`, `x-wallet-signature`, `x-wallet-expires` | one action: `upload`, `token:edit` (detail: the token) or `token:handover` (detail: the token and the recipient) |
+| `Authorization: Bearer <token>` | a bearer carrying the matching scope, `upload`, `token:edit` or `token:handover`, minted by [Sign-In with Ethereum](/integration/agents#sign-in-with-ethereum) |
+
+When `x-wallet-address` is present the signed headers are what is checked.
+A bearer buys no extra upload budget: the `uploads` lane stays per IP.
+
 ### Live updates
 
 ```
@@ -452,6 +498,18 @@ REST, as after any reconnect without `since`. A different `epoch` means a
 new process; subscribe without `since` and refetch. `hello`, `pong`,
 `resumed` and `resync` carry no `seq`. Drop any frame whose `seq` you have
 already handled.
+
+#### Reorgs
+
+On Base a trade reaches the feed and the chart at the head of the chain,
+usually within a second of its block, and is not final there. A confirming pass
+two blocks behind the head re-reads each window against the block hashes
+the rows were stored under. When a block was replaced, every row from it
+onward is removed (trades, transfers, fees), the candles, holder balances
+and token stats built from them are rebuilt, and the chain is read again.
+Each token touched gets `token.touched` on its `token:` topic and on every
+`candles:` topic for it. Refetch on that event, and do not treat a trade
+row as settled until your own node has it at the depth you need.
 
 ### Images
 

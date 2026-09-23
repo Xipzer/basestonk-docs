@@ -30,7 +30,7 @@ GET https://api.basestonk.io/api/v1/llms.txt       # the same, for a context win
 ```
 
 <Note>
-The spec is canonical; this page is orientation. Both are generated from one registry in the API's source and cannot drift from the server.
+The spec is canonical; this page is orientation. The spec is generated from the route declarations the server registers, and a test holds the two one-to-one, so it cannot drift from the server. `llms.txt` carries the operations tagged `agents`.
 </Note>
 
 ## Budgets
@@ -97,7 +97,61 @@ redeemed for prepare.
 |---|---|
 | One signature, one session | a replay answers `401 signature already used` |
 | Bearers last | 1 hour - `GET /api/v1/agent/whoami` reports identity and scopes without spending a read |
-| Minting | 3 per hour per IP |
+| Minting | 3 per hour per IP, shared with Sign-In with Ethereum |
+
+This route mints `read` and `prepare` only. The write scopes come from
+Sign-In with Ethereum.
+
+### Sign-In with Ethereum
+
+The same bearer, from a standard EIP-4361 message instead of typed data,
+and the only way to a bearer that can write.
+
+```bash
+GET  /api/v1/auth/siwe/nonce
+→ { "nonce": "…", "expiresAt": … }          # single use, 5 minutes
+
+POST /api/v1/auth/siwe
+  { "message": "<the EIP-4361 text, exactly as signed>",
+    "signature": "0x…",
+    "scopes": ["read","prepare"] }          # optional; narrows, never widens
+→ { "token": "v1.…", "wallet": "0x…", "scopes": [...], "expiresAt": … }
+```
+
+| Message field | |
+|---|---|
+| domain | `basestonk.io`, `www.basestonk.io` or `api.basestonk.io` |
+| URI | `https://` on that same domain |
+| Chain ID | `8453` or `4663` |
+| Nonce | from `/siwe/nonce` |
+| Resources | one `urn:basestonk:scope:<scope>` line per scope granted |
+
+| Scope | Grants |
+|---|---|
+| `read` | always included; the wallet's own read budget |
+| `prepare` | the `/prepare` endpoints and the agent pinning routes |
+| `upload` | `POST /api/launchpad/images` and `/metadata` in place of the signed headers |
+| `token:edit` | editing any token page the wallet controls |
+| `token:handover` | handing such a page to another wallet |
+
+Scopes are in what the wallet signs, so its own screen lists what it is
+delegating. A message naming none grants `read` only; asking in the body
+for a scope the message did not name is `403`, and an unknown scope is
+`400`. The server re-renders the message and refuses any difference
+(`400 not a canonical EIP-4361 message`), so build it with a SIWE library
+such as viem's `createSiweMessage` and send the text unchanged; the address
+must be checksummed. An EOA signature is checked directly; a smart wallet
+is checked through ERC-1271, or ERC-6492 before it is deployed, on Base.
+
+| Refusal | |
+|---|---|
+| `401` | wrong domain, URI or chain; a nonce that is forged, expired or used; a signature that does not match |
+| `403` | a scope the message did not sign for, or a denied wallet |
+| `429` | the minting lane, or more than 20 requests a minute to `/siwe/*` |
+
+A write bearer is a delegation: `token:edit` edits every page the wallet
+controls, and `token:handover` names no recipient. Ask for it only in a
+session that needs it.
 
 ## Prepared transactions
 

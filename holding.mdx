@@ -19,7 +19,7 @@ have received, what is waiting, and where you are in line as
 
 **Claim now** pays you immediately instead of waiting for the queue. It
 costs gas and is never required. On Base it calls `claim()`; on Robinhood
-Chain, `claimFor(you)`.
+Chain and Arc, `claimFor(you)`.
 
 <Note>
 Your place in the queue is a fact about the queue, not about your balance. A large holder and a small one are delivered in the same order they were queued.
@@ -28,20 +28,74 @@ Your place in the queue is a fact about the queue, not about your balance. A lar
 ## Portfolio
 
 [basestonk.io/portfolio](https://basestonk.io/portfolio) reads your
-wallet across every chain.
+wallet across every chain. Open it from **Portfolio** in the header, or
+from **View portfolio** in the wallet sheet. The chain menu at the top
+right narrows it to one chain. The page has four tabs.
 
-**Holdings** - every BaseStonk token you hold, its value, weight and 24h
-move, with a *hide dust* toggle for positions under \$1.
+### Overview
 
-**PnL** - entry price, what you still hold, realised and unrealised gain,
-and your return per token. Exportable as CSV.
+- **Net value.** What your wallet is worth, with the day's move and the
+  word *today*. If some of your holdings have no price yet, the page says
+  so and the figure is a floor.
+- **Trading PnL.** A graph of your profit and loss over time: what you
+  sold for, minus what you paid, plus what you still hold at its last
+  traded price. Drag across it to read any day. Pick **1W**, **1M** or
+  **All**. With no trades yet it draws a flat line at \$0.
+- **Performance.** **Unrealized return**, **Realized return** and
+  **Total return**, in dollars and percent.
+- **Tokens.** Your largest holdings, with **View all tokens**.
+- **Claimable.** Shown only when something is waiting for you: dividends,
+  a vesting release, creator fees, or a \$BSTONK basket round. See
+  [Claiming](#claiming) below.
+- **Recent activity**, with **View all activity**, and your cash
+  balances.
 
-**Launches** - tokens you created, with market cap, holders and fees
-earned, and a **Manage** button for each.
+### Tokens
 
-**Earnings** - dividends received, by source and by asset.
+Every BaseStonk token you hold, with **Price**, **Balance**, **Value**,
+**24h**, **PnL** and **Return**. Search by name, symbol or address.
+**Hide dust** hides holdings under \$1. **Closed** adds positions you have
+fully sold. **Export CSV** downloads every position.
 
-**Claimable** - anything in a basket-vault round waiting for you to pull it.
+### Launches
+
+Tokens you created, with market cap, holders and fees earned, and a
+**Manage** button for each. Below them, **Earnings** lists the dividends
+you have received, by source.
+
+### Activity
+
+Your buys, sells, launches, claims and approvals, newest first, each with
+a link to the transaction. Filter by type and by time (**Last 24 hours**,
+**Last 7 days**, **Last 30 days**), or search by token or transaction.
+**Load more** reaches further back. Trades and launches come from
+BaseStonk's indexer. Claims and approvals appear when you signed them on
+this device.
+
+### Claiming
+
+The **Claimable** card lists up to three items, each with **Open**, which
+takes you to the page where that claim is made. **Review claims** opens
+the full list, grouped by chain, with a box to tick for each. It counts
+the wallet transactions your choice needs, and **Open first selected
+claim** starts with the first one. Nothing is bundled and nothing is
+claimed for you: each claim is its own signature.
+
+## The wallet sheet
+
+Once you are connected, your address in the header is a button. Press it
+to open the wallet sheet:
+
+- your address, with a copy button, a chain menu and a disconnect button
+- your net value and the day's move
+- **Bridge**, which opens the bridge, and **Receive**, which shows your
+  address as a QR code
+- **View portfolio**
+- **Recent activity**, with **View all**, which opens the Activity tab
+
+A small pulsing dot on your address in the header means a transaction is
+still pending. The sheet has no close button: tap outside it, press
+`Escape`, or on a phone swipe it down.
 
 ### Sharing a position
 

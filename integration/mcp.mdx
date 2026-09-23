@@ -181,7 +181,8 @@ is marked private, because it names your wallet.
 
 `chainId` is `8453` (Base, the default) or `4663` (Robinhood Chain). The
 inputs are the ones the [prepare endpoints](/integration/agents#prepared-transactions)
-take, generated from the same registry.
+take; in the OpenAPI document each of those operations names the tool that
+calls it under `x-mcp-tools`.
 
 A prepare tool answers with:
 
@@ -209,7 +210,9 @@ in with a button.
 
 An agent that holds its own key can skip OAuth. Mint a bearer with
 `{"scopes":["read","prepare"]}` at `POST /api/v1/agent/session`
-([how](/integration/agents#sessions)) and send it as
+([how](/integration/agents#sessions)), or through
+[Sign-In with Ethereum](/integration/agents#sign-in-with-ethereum) with
+the `prepare` scope named in the message, and send it as
 `Authorization: Bearer <token>`.
 
 ### What the agent can and cannot do

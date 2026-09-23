@@ -23,7 +23,26 @@ where you must hold the stock already and the panel says so.
 
 Before you press the button, the panel shows **Wallet signatures**: how
 many times your wallet will ask you to sign, counting any token approval
-it needs first.
+it needs first. The approval for the pool is given once per token, not
+once per trade.
+
+### Approve and trade in one signature
+
+Some wallets can send an approval and a trade together as one request.
+Smart wallets usually can. The panel uses this when three things are
+true: your wallet says it supports it, the trade needs an approval, and
+the trade goes straight to the pool (you pay in the pair, or you sell the
+token for the pair).
+
+First the panel simulates the approval and the trade together. If that
+passes, your wallet asks once and the panel shows **Approve and trade in
+wallet…**. Beforehand, **Wallet signatures** reads *1 if batch preflight
+passes; otherwise* the usual count.
+
+If the simulation finds the trade would fail, nothing is sent and the
+panel shows the error. If the simulation cannot run at all, the trade
+takes the usual path: approve first, then trade. A routed trade, paying
+in ETH or another asset, always takes the usual path.
 
 ## What you pay
 
