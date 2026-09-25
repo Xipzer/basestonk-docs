@@ -414,6 +414,20 @@ their own wallet as with any launch; nothing about a preset touches the API
 with a key. A wallet calling the launcher directly is bound only by the
 launcher - the preset is a promise the form keeps, not a rule the chain does.
 
+**After the launch, back to the partner.** A preset can name its partner's next
+step, and the success screen then leads with **Continue on {partner}**, the
+token page one tap below it. The partner can set the destination per link
+with `next=`, using the placeholders `{token}`, `{chain}`, `{symbol}`, `{name}`
+and `{tx}`:
+
+```text
+https://basestonk.io/create?template=reppo-datanet&next=https%3A%2F%2Freppo.ai%2Fdatanets%2Fnew%3Ftoken%3D%7Btoken%7D
+```
+
+`next=` is honoured only for an `https` URL on the partner's own host or one
+of its subdomains; anything else falls back to the preset's own destination,
+so a link cannot send a creator somewhere else. URL-encode the value.
+
 | id | partner | preset |
 |---|---|---|
 | `reppo-datanet` | [Reppo](https://reppo.ai) | paired with \$REPPO · 2% buy / 2% sell · 40% of creator fees to Reppo (locked) · 30-day dev-buy lock · 15-minute anti-sniper window · 5% holder limit |
