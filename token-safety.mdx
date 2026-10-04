@@ -12,7 +12,7 @@ Most are heuristics meeting an architecture they were not written for.
 |---|---|---|
 | **Creator can move funds** | **False** | an external call on every transfer - the dividend tracker notification |
 | **Unlocked liquidity / 0% locked** | **Model mismatch** | v4 has no LP token to lock or burn; the position lives in the PoolManager |
-| **High transfer fees** | **Usually true** | the token's tax plus the pool fee - the creator's published choice |
+| **High transfer fees** | **Usually true** | the token's tax (plus a 0.3% pool fee on launches before V7) - the creator's published choice |
 | **Unverified contract** | **False on Base and Robinhood Chain; true on Arc** | every active Base and Robinhood Chain contract is verified on its explorer. Arc's explorer cannot verify source code yet |
 | **Unverified token** | **About the list, not the token** | absent from the scanner's own curated list |
 
@@ -58,7 +58,8 @@ is added in the launcher's own unlock callback with a strictly positive
 
 ## High transfer fees
 
-A 4% launch measures at about 4.1% - tax plus pool fee. Quote against the
+A 4% V7 launch measures at 4% - V7 pools charge no LP fee. A launch from
+before V7 measures at about 4.1%, tax plus the 0.3% pool fee. Quote against the
 token's published `buyTaxBps` and `sellTaxBps`, not a default. A scanner
 simulating inside the anti-sniper window measures the decaying toll,
 which is gone within 30 minutes.

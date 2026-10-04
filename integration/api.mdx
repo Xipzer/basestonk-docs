@@ -191,6 +191,9 @@ GET /api/launchpad/tokens/{address}?chain={chain}
 
 One token, as `{ "token": {...} }`. Add `tx=<launch hash>` and a token not
 yet indexed is indexed from that receipt on the spot.
+`minHoldingTokens` is set on V7 launches that pay dividends: the whole tokens a
+wallet must hold to earn (the token's `minHolding()`, 1/100,000 of supply). It
+is `null` on every other launch, which pays every holder.
 
 ```bash
 GET /api/launchpad/tokens/{address}/candles?chain={chain}&interval=1m

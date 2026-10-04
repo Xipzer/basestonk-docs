@@ -21,10 +21,26 @@ trade. Nothing to claim. Nothing to trust.
   <Step title="The contracts buy the assets">
     Through real markets, with a floor so holders are never quietly shortchanged. No bot, no middleman, no conversion fee.
   </Step>
-  <Step title="Every holder gets their share">
+  <Step title="Every qualifying holder gets their share">
     Automatically, as people trade. Claiming is optional, never required.
   </Step>
 </Steps>
+
+## Who qualifies
+
+On launches since **V7 on Base** (2026-10-03), two rules decide who earns:
+
+- **A minimum holding.** A wallet earns while it holds at least 1/100,000 of
+  supply - **10,000 tokens** on a 1B launch. The exact figure is the token's
+  `minHolding()`. Below it, the wallet earns nothing and takes no place in
+  the payout queue, so an airdrop of dust to thousands of wallets neither
+  dilutes real holders nor slows their payouts.
+- **No same-block earnings.** Tokens bought in a block earn nothing from
+  fees that arrive in that same block. Buying, claiming and selling in one
+  transaction - the flash-loan pattern - pays zero.
+
+Earlier Base launches, and launches on Robinhood Chain and Arc, pay every
+holder pro rata with no minimum.
 
 The menu is the chain's admitted pairs: on Base, tokenized stocks, ETFs,
 cbBTC, \$BSTONK and several hundred ecosystem tokens; on Robinhood Chain,

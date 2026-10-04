@@ -10,22 +10,22 @@ at the address.
 
 | Chain | Id | Explorer | Current launcher |
 |---|---|---|---|
-| Base | 8453 | Basescan | [AdvancedLauncherV6](#base-current-v6) |
+| Base | 8453 | Basescan | [AdvancedLauncherV7](#base-current-v7) |
 | Robinhood Chain | 4663 | Blockscout | [RhLauncher](#robinhood-chain-4663) |
 | Arc | 5042 | Arcscan | [RhLauncher](#arc-5042) |
 
-## Base - current (V6)
+## Base - current (V7)
 
-Deployed at blocks 50,637,223 - 50,637,288.
+Deployed at blocks 52,132,550 - 52,132,565 (2026-10-03).
 
 | Contract | Address |
 |---|---|
-| AdvancedLauncherV6 | [`0x80459E17eC8269f058152169e58022a70ed9F1fa`](https://basescan.org/address/0x80459E17eC8269f058152169e58022a70ed9F1fa#code) |
-| AdvancedFeeHookV6 | [`0x7C672F3850afadCb8f83478E0A2a90D109fA6044`](https://basescan.org/address/0x7C672F3850afadCb8f83478E0A2a90D109fA6044#code) |
-| HolderRewardsFactory | [`0x029c3CC99eCBA10Fc1616773be37FF86ffe5C395`](https://basescan.org/address/0x029c3CC99eCBA10Fc1616773be37FF86ffe5C395#code) |
-| LaunchVestingFactory | [`0xD319b426573877613E66932edd3aA40C0CAbC56C`](https://basescan.org/address/0xD319b426573877613E66932edd3aA40C0CAbC56C#code) |
-| GatedLaunchLens | [`0x10459d4fb21860692127b291F27bA4C9985B74c7`](https://basescan.org/address/0x10459d4fb21860692127b291F27bA4C9985B74c7#code) |
-| LaunchControl | [`0x6cC865BB382cEB3D876F99Dfe40C44C1AeE70a6E`](https://basescan.org/address/0x6cC865BB382cEB3D876F99Dfe40C44C1AeE70a6E#code) |
+| AdvancedLauncherV7 | [`0x4BC0E8c2caaB145612956652A5668864FfcC7AF7`](https://basescan.org/address/0x4BC0E8c2caaB145612956652A5668864FfcC7AF7#code) |
+| Fee hook (AdvancedFeeHookV6 source) | [`0x5c999109609f9f857F4D58240CcB12Bf219eE044`](https://basescan.org/address/0x5c999109609f9f857F4D58240CcB12Bf219eE044#code) |
+| HolderRewardsFactoryV7 | [`0x08355C1B7Fb50a3568a503C66a615E162190bc42`](https://basescan.org/address/0x08355C1B7Fb50a3568a503C66a615E162190bc42#code) |
+| LaunchVestingFactory | [`0xAAC771d8Cf973131d93a8fAA163E9210289ABfA2`](https://basescan.org/address/0xAAC771d8Cf973131d93a8fAA163E9210289ABfA2#code) |
+| GatedLaunchLens | [`0x11b4b26F7679D5bbe49681a48Dda2F8CC3E8e7BB`](https://basescan.org/address/0x11b4b26F7679D5bbe49681a48Dda2F8CC3E8e7BB#code) |
+| LaunchControl | [`0x6bD282b6bA9F4fd441bC6585657922A74efa4d55`](https://basescan.org/address/0x6bD282b6bA9F4fd441bC6585657922A74efa4d55#code) |
 | RoutedQuoteGate | [`0x27538A4F1E3f7BF9d6Fa4A56d7156c67Dc843176`](https://basescan.org/address/0x27538A4F1E3f7BF9d6Fa4A56d7156c67Dc843176#code) |
 | CuratedRoutes | [`0x283e15463fF4E6390892402c02cA9ec744be9bf4`](https://basescan.org/address/0x283e15463fF4E6390892402c02cA9ec744be9bf4#code) |
 | BasketVaultV2 | [`0x99FeB612f130c5e981dbC0a96c436bC06ca0fE9E`](https://basescan.org/address/0x99FeB612f130c5e981dbC0a96c436bC06ca0fE9E#code) |
@@ -48,19 +48,36 @@ Stateless, no constructor arguments; needed to reproduce a launch's bytecode.
 | Library | Address |
 |---|---|
 | CrossableDepth | [`0x2c6592e4b9a02f9f597bb0bf477cbb156fac83e7`](https://basescan.org/address/0x2c6592e4b9a02f9f597bb0bf477cbb156fac83e7#code) |
-| ConvertVenues | [`0x08c9378a8aff30edbf9489ebbd73fec6183ba6be`](https://basescan.org/address/0x08c9378a8aff30edbf9489ebbd73fec6183ba6be#code) |
-| ConvertPricing | [`0x2d8c7ee2665f60bbb238589cfea5576f37f3780e`](https://basescan.org/address/0x2d8c7ee2665f60bbb238589cfea5576f37f3780e#code) |
+| ConvertVenues | [`0xaaae76f31a3358320f21736f3b94fb4618cd4f86`](https://basescan.org/address/0xaaae76f31a3358320f21736f3b94fb4618cd4f86#code) |
+| ConvertPricing | [`0x0d4d35f12c39c61308b550360124a4e94598e516`](https://basescan.org/address/0x0d4d35f12c39c61308b550360124a4e94598e516#code) |
+| TokenPath | [`0xe4059c05479956ea0efef1a6651e91edea6be546`](https://basescan.org/address/0xe4059c05479956ea0efef1a6651e91edea6be546#code) |
+| LaunchRewardsV7 | [`0x5312505eaf59a022b5fdde0f3ac238627914a1b7`](https://basescan.org/address/0x5312505eaf59a022b5fdde0f3ac238627914a1b7#code) |
 | LaunchRewards | [`0x113dcdf45dbf3869a47517c1dccdea482098d0de`](https://basescan.org/address/0x113dcdf45dbf3869a47517c1dccdea482098d0de#code) |
 | LaunchOpening | [`0xf23570f7885a3f8dea2efcf14ec0e93cd129715b`](https://basescan.org/address/0xf23570f7885a3f8dea2efcf14ec0e93cd129715b#code) |
 | BasketControl | [`0xb65a995e5d1cd7d0d3412c13c57c77c473cde333`](https://basescan.org/address/0xb65a995e5d1cd7d0d3412c13c57c77c473cde333#code) |
 
 Launcher, hook and factories are bound immutably in both directions, so
-any one address proves the rest. RoutedQuoteGate, SwapRouter and
-PairOracleRegistry carry over from V5.
+any one address proves the rest. RoutedQuoteGate, CuratedRoutes,
+BasketVaultV2, SwapRouter and PairOracleRegistry carry over from earlier
+generations; V7 has its own LaunchControl.
 
-V6 added: split buy/sell tax, [dev-buy vesting](/vesting), the anti-sniper
-toll, the basket controller seat with renounce-at-launch, and
-[takeover through LaunchControl](/vesting#community-takeover).
+V7 keeps everything V6 added - split buy/sell tax, [dev-buy vesting](/vesting),
+the anti-sniper toll, the basket controller seat, and
+[takeover through LaunchControl](/vesting#community-takeover) - and changes
+how dividends are earned:
+
+- **A minimum holding.** A wallet earns dividends only while it holds at least
+  `minHolding()` of the token - 1/100,000 of supply, 10,000 tokens on a 1B
+  launch. A mass airdrop of dust neither dilutes holders nor slows the payout
+  queue.
+- **No same-block earnings.** A balance bought in a block earns nothing from
+  fees that arrive in that block, so buy-claim-sell in one transaction pays
+  zero.
+- **A transfer cannot skip the books.** The sender's dividend shares are
+  reduced inside every transfer; a transfer sent with too little gas for that
+  reverts, so nobody can sell while the ledger still credits the old balance.
+- **0% pool fee.** The launch pool charges no LP fee, so the token's tax is the
+  whole cost of a trade.
 
 ## Retired generations
 
@@ -70,6 +87,10 @@ listed.
 
 | Contract | Status | Address |
 |---|---|---|
+| Launcher V6 | retired at block 52,134,295 | [`0x80459E17eC8269f058152169e58022a70ed9F1fa`](https://basescan.org/address/0x80459E17eC8269f058152169e58022a70ed9F1fa#code) |
+| Fee hook V6 | retired at block 52,134,295 | [`0x7C672F3850afadCb8f83478E0A2a90D109fA6044`](https://basescan.org/address/0x7C672F3850afadCb8f83478E0A2a90D109fA6044#code) |
+| Rewards factory V6 | retired with V6 | [`0x029c3CC99eCBA10Fc1616773be37FF86ffe5C395`](https://basescan.org/address/0x029c3CC99eCBA10Fc1616773be37FF86ffe5C395#code) |
+| LaunchControl V6 | still governs V6 launches | [`0x6cC865BB382cEB3D876F99Dfe40C44C1AeE70a6E`](https://basescan.org/address/0x6cC865BB382cEB3D876F99Dfe40C44C1AeE70a6E#code) |
 | Launcher V5 | retired at block 50,637,277 | [`0xAE31b51460dA9C7Cbf906CbaF39Ba55e47c3De42`](https://basescan.org/address/0xAE31b51460dA9C7Cbf906CbaF39Ba55e47c3De42#code) |
 | Fee hook V5 | retired at block 50,637,277 | [`0x201c4916c085032FB49f0B778eFA98DF23672044`](https://basescan.org/address/0x201c4916c085032FB49f0B778eFA98DF23672044#code) |
 | Launcher V4 | retired | [`0x5263E7264c817909893Aa9a00Dc2f4B433040fc1`](https://basescan.org/address/0x5263E7264c817909893Aa9a00Dc2f4B433040fc1#code) |
