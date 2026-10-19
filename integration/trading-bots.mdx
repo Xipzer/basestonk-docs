@@ -16,7 +16,7 @@ Skip the assembly: `POST /api/v1/agent/trade/prepare` runs this recipe server-si
     `GET /api/launchpad/tokens/{address}?chain={chain}` - pair, hook (`curve`), tax (`buyTaxBps` / `sellTaxBps`, or `taxBps` pre-V6). One batched call beats a loop; a 429 is refused, never empty.
   </Step>
   <Step title="Build the PoolKey">
-    `(token, pair, 3000, 60, hook)`. The hook is part of the pool's identity - [the per-generation trap](/integration/onchain#the-poolkey).
+    `(currency0, currency1, fee, 60, hook)`: the token and its pair ordered by address, with `fee` `0` on V7 pools and `3000` on every other launcher. The token is currency0 except in B20 mode, where it can be either side. The hook is part of the pool's identity - [the per-generation trap](/integration/onchain#the-poolkey).
   </Step>
   <Step title="Quote at the live rate">
     `AdvancedFeeHookV6.taxFor(key, zeroForOne)` - includes the anti-sniper toll on a fresh launch. Set `minOut` with at least that headroom. [The three rules](/integration/onchain#three-things-every-integration-must-handle)

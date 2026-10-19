@@ -19,21 +19,22 @@ Wallets cannot call the PoolManager directly; trade through the router.
 // SwapRouter - exact-in only. Approve the input currency first.
 function swap(PoolKey key, bool zeroForOne, uint256 amountIn, uint256 minOut, address to)
     returns (uint256 amountOut)
-// zeroForOne: false = buy the token, true = sell it
+// zeroForOne: false = buy the token, true = sell it - when the token is currency0.
+// A B20-mode token can be currency1, and then the two are swapped.
 ```
 
 ### The PoolKey
 
 | Field | Value |
 |---|---|
-| `currency0` | the launched token - always sorts below its pair |
+| `currency0` | the launched token - it sorts below its pair on every launcher except B20 mode, where it can be either side |
 | `currency1` | the pair token - `pairToken` in the API record |
-| `fee` | `3000` |
+| `fee` | `0` on V7 pools, `3000` on every other launcher, B20 mode, Robinhood Chain and Arc |
 | `tickSpacing` | `60` |
 | `hooks` | the token's own hook - `curve` in the API record |
 
 <Warning>
-A pool's identity includes its hook, and there are six generations of them. Assume one hook for every pool and the other launchers' swaps never match your pool ids - those tokens chart flat while trading normally.
+A pool's identity includes its hook, and Base alone has ten hooks with pools on them. Assume one hook for every pool and the other launchers' swaps never match your pool ids - those tokens chart flat while trading normally.
 </Warning>
 
 ### Three things every integration must handle
@@ -150,6 +151,17 @@ renounced. Value in a replaced slot drains to holders on the same maths.
 | `RewardsEnabled(token, distributor, rewardsBps)` | the launcher | the dividend distributor |
 | `VaultCreated(token, vault, beneficiary, vestCliff, vestDuration)` | the launcher | the vesting schedule, when there is one |
 | `FeeTaken(poolId, currency, platformFee, creatorFee)` | the hook | every taxed swap's fee flow |
+
+`AdvancedLaunched` has two shapes, and backfilling the full history needs
+both. V6, V7, B20 V6B and `RhLauncher` on Robinhood Chain and Arc emit the
+split-tax shape above, topic0
+`0x370377cb17f063e0544347d821ef4fb78fb513351700977cb06c7e63715d1ef0`. The
+launchers before V6 (V2 to V5C and B20 V1) emit one `taxBps` in place of
+`buyTaxBps` and `sellTaxBps`, topic0
+`0x508e31622f2b7886bd54a544c43d38ad441276dd8b24f0fb37e7c793869f6997`. Match
+on the launcher's address as well as the topic: other projects emit launch
+events with common names. The pool's key is in the PoolManager's `Initialize`
+in the same transaction, with `id` equal to `poolId`.
 
 Same events on all three chains - Arc runs the same launcher and hook code as Robinhood Chain - so one decoder serves every chain.
 
